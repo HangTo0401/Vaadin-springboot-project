@@ -1,2 +1,5 @@
 # Vaadin-springboot-project
-Front end: Vaadin
+Frontend: Vaadin 14
+Backend: Spring boot + Java 11
+Cached: Ehcached
+Database: MySQL
