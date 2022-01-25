@@ -4,6 +4,7 @@ import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SupplierRepository;
+import com.example.demo.service.MainService;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
@@ -20,7 +21,6 @@ import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.lang3.StringUtils;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,13 +44,15 @@ public class MainView extends VerticalLayout {
     private Dialog supplierDialog;
     private Dialog productDialog;
 
+    private final MainService service;
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
 
     private List<Supplier> listSuppliers = new ArrayList<>();
     private List<Product> listProducts = new ArrayList<>();
 
-    public MainView(SupplierRepository supplierRepository, ProductRepository productRepository) {
+    public MainView(MainService service, SupplierRepository supplierRepository, ProductRepository productRepository) {
+        this.service = service;
         this.supplierRepository = supplierRepository;
         this.productRepository = productRepository;
         setupLayout(DEFAULT_LAYOUT);
@@ -186,7 +188,8 @@ public class MainView extends VerticalLayout {
     private void initSupplierGrid() {
         supplierGrid = new Grid<>(Supplier.class, false);
         // Supplier employee = new Supplier(1, "Cuong phan", Date.valueOf("1984-05-10"), "cuong.phan@axonactive.com", "0906678806", "Tân Bình HCM");
-        listSuppliers = supplierRepository.findAll();
+//        listSuppliers = supplierRepository.findAll();
+        listSuppliers = service.getAllSuppliers();
 
         supplierGrid.addColumn(Supplier::getName).setHeader(new Html("<b>Name</b>"));
         supplierGrid.addColumn(Supplier::getDateOfBirth).setHeader(new Html("<b>Birthdate</b>"));
@@ -220,7 +223,9 @@ public class MainView extends VerticalLayout {
 
     private void initProductGrid() {
         productGrid = new Grid<>(Product.class, false);
-        listProducts = productRepository.findAll();
+
+//        listProducts = productRepository.findAll();
+        listProducts = service.getAllProducts();
 
         productGrid.addColumn(Product::getProductName).setHeader(new Html("<b>Product Name</b>"));
         productGrid.addColumn(Product::getQuantity).setHeader(new Html("<b>Quantity</b>"));
