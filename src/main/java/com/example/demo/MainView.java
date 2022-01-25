@@ -47,6 +47,8 @@ public class MainView extends VerticalLayout {
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
 
+    private List<Supplier> listSuppliers = new ArrayList<>();
+    private List<Product> listProducts = new ArrayList<>();
 
     public MainView(SupplierRepository supplierRepository, ProductRepository productRepository) {
         this.supplierRepository = supplierRepository;
@@ -67,9 +69,15 @@ public class MainView extends VerticalLayout {
             if (btnName.equals("Supplier")) {
                 mainLayout.replace(productActionButtonsLayout, supplierActionButtonsLayout);
                 mainLayout.replace(productVerticalLayout, supplierVerticalLayout);
+                if (StringUtils.isEmpty("")) {
+                    listSuppliers = supplierRepository.findByNameStartsWithIgnoreCase("");
+                }
             } else if (btnName.equals("Product")) {
                 mainLayout.replace(supplierActionButtonsLayout, productActionButtonsLayout);
                 mainLayout.replace(supplierVerticalLayout, productVerticalLayout);
+                if (StringUtils.isEmpty("")) {
+//                    listProducts = productRepository.findByNameStartsWithIgnoreCase("");
+                }
             }
         });
         button.addClickShortcut(Key.ENTER);
@@ -178,14 +186,7 @@ public class MainView extends VerticalLayout {
     private void initSupplierGrid() {
         supplierGrid = new Grid<>(Supplier.class, false);
         // Supplier employee = new Supplier(1, "Cuong phan", Date.valueOf("1984-05-10"), "cuong.phan@axonactive.com", "0906678806", "Tân Bình HCM");
-        List<Supplier> listSuppliers = new ArrayList<>();
-
-        if (StringUtils.isEmpty("")) {
-            listSuppliers = supplierRepository.findAll();
-        }
-        else {
-            listSuppliers = supplierRepository.findByNameStartsWithIgnoreCase("");
-        }
+        listSuppliers = supplierRepository.findAll();
 
         supplierGrid.addColumn(Supplier::getName).setHeader(new Html("<b>Name</b>"));
         supplierGrid.addColumn(Supplier::getDateOfBirth).setHeader(new Html("<b>Birthdate</b>"));
@@ -213,22 +214,13 @@ public class MainView extends VerticalLayout {
             HorizontalLayout buttons = new HorizontalLayout(editBtn, removeBtn);
             return new VerticalLayout(buttons);
         })).setHeader(new Html("<b>Actions</b>"));
-//        supplierGrid.setItems(employee);
         supplierGrid.setItems(listSuppliers);
         supplierVerticalLayout.add(supplierGrid);
     }
 
     private void initProductGrid() {
         productGrid = new Grid<>(Product.class, false);
-//        Product product = new Product(2, "Product", 10, 10000.23, "Cuong Phan");
-        List<Product> listProducts = new ArrayList<>();
-
-        if (StringUtils.isEmpty("")) {
-            listProducts = productRepository.findAll();
-        }
-        else {
-            listProducts = productRepository.findByNameStartsWithIgnoreCase("");
-        }
+        listProducts = productRepository.findAll();
 
         productGrid.addColumn(Product::getProductName).setHeader(new Html("<b>Product Name</b>"));
         productGrid.addColumn(Product::getQuantity).setHeader(new Html("<b>Quantity</b>"));
@@ -257,15 +249,5 @@ public class MainView extends VerticalLayout {
         })).setHeader(new Html("<b>Actions</b>"));
         productGrid.setItems(listProducts);
         productVerticalLayout.add(productGrid);
-    }
-
-    private void getListSuppliers(String filterText) {
-        if (StringUtils.isEmpty(filterText)) {
-            supplierGrid.setItems(supplierRepository.findAll());
-        }
-        else {
-            supplierGrid.setItems(supplierRepository.findByNameStartsWithIgnoreCase(filterText));
-        }
-        supplierVerticalLayout.add(supplierGrid);
     }
 }
