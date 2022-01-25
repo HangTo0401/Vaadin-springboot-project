@@ -220,7 +220,15 @@ public class MainView extends VerticalLayout {
 
     private void initProductGrid() {
         productGrid = new Grid<>(Product.class, false);
-        Product product = new Product(2, "Product", 10, 10000.23, "Cuong Phan");
+//        Product product = new Product(2, "Product", 10, 10000.23, "Cuong Phan");
+        List<Product> listProducts = new ArrayList<>();
+
+        if (StringUtils.isEmpty("")) {
+            listProducts = productRepository.findAll();
+        }
+        else {
+            listProducts = productRepository.findByNameStartsWithIgnoreCase("");
+        }
 
         productGrid.addColumn(Product::getProductName).setHeader(new Html("<b>Product Name</b>"));
         productGrid.addColumn(Product::getQuantity).setHeader(new Html("<b>Quantity</b>"));
@@ -247,7 +255,7 @@ public class MainView extends VerticalLayout {
             HorizontalLayout buttons = new HorizontalLayout(editBtn, removeBtn);
             return new VerticalLayout(buttons);
         })).setHeader(new Html("<b>Actions</b>"));
-        productGrid.setItems(product);
+        productGrid.setItems(listProducts);
         productVerticalLayout.add(productGrid);
     }
 
