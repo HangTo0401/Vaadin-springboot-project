@@ -4,11 +4,10 @@ import com.example.demo.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import javax.transaction.Transactional;
 
-// This will be AUTO IMPLEMENTED by Spring into a Bean called userRepository
-// CRUD refers Create, Read, Update, Delete
+// This will be AUTO IMPLEMENTED CRUD by Spring into a Bean called ProductRepository
 @Repository
+@Transactional
 public interface ProductRepository extends JpaRepository<Product, Integer> {
-    List<Product> findByNameStartsWithIgnoreCase(String name);
 }
