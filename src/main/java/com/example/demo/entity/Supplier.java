@@ -4,9 +4,10 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
-@Table(name = "supplier")
+@Table(name = "supplier", schema = "demo_db")
 @Data
 public class Supplier {
     @Id
@@ -33,6 +34,15 @@ public class Supplier {
 
     @Column(name="phone_number")
     private String phoneNumber;
+
+    public String getName() {
+        return this.firstname.concat(" ").concat(this.lastname);
+    }
+
+    @OneToMany(mappedBy="supplier", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Product> products;
+
+    public Supplier(){}
 
     public Supplier(long id, String firstname, String lastname, Date dateOfBirth, String email, String phoneNumber, String address) {
         this.id = id;
