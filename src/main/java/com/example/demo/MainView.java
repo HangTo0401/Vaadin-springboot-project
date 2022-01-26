@@ -15,9 +15,11 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import org.apache.commons.lang3.StringUtils;
 
@@ -40,6 +42,9 @@ public class MainView extends VerticalLayout {
 
     private Grid<Supplier> supplierGrid;
     private Grid<Product> productGrid;
+
+    private TextField productFilterText;
+    private TextField supplierFilterText;
 
     private Dialog supplierDialog;
     private Dialog productDialog;
@@ -137,18 +142,33 @@ public class MainView extends VerticalLayout {
     }
 
     private void createSupplierSearchArea() {
-        TextField textField = new TextField();
-        textField.setPlaceholder("Search");
-        supplierActionButtonsLayout.add(textField);
+//        TextField textField = new TextField();
+        supplierFilterText.setPlaceholder("Search");
+        supplierFilterText.setClearButtonVisible(true);
+        supplierFilterText.setValueChangeMode(ValueChangeMode.LAZY);
+        supplierFilterText.addValueChangeListener(e -> updateSupplierList());
+        supplierActionButtonsLayout.add(supplierFilterText);
 
         // New button
         createNewSupplierButton("Supplier", "New Supplier");
     }
 
+    private void updateSupplierList() {
+        listSuppliers = service.getAllSuppliers(supplierFilterText.getValue());
+        supplierGrid.setItems(listSuppliers);
+    }
+
+    private void updateProductList() {
+        listProducts = service.getAllProducts(productFilterText.getValue());
+        productGrid.setItems(listProducts);
+    }
+
     private void createProductSearchArea() {
-        TextField textField = new TextField();
-        textField.setPlaceholder("Search");
-        productActionButtonsLayout.add(textField);
+        productFilterText.setPlaceholder("Search");
+        productFilterText.setClearButtonVisible(true);
+        productFilterText.setValueChangeMode(ValueChangeMode.LAZY);
+        productFilterText.addValueChangeListener(e -> updateProductList());
+        productActionButtonsLayout.add(productFilterText);
 
         // New button
         createNewProductButton("Product", "New Product");
@@ -164,6 +184,10 @@ public class MainView extends VerticalLayout {
         mainLayout = new VerticalLayout();
         supplierVerticalLayout = new VerticalLayout();
         productVerticalLayout = new VerticalLayout();
+
+        // Search text
+        productFilterText = new TextField();
+        supplierFilterText = new TextField();
 
         supplierDialog = new Dialog();
         productDialog = new Dialog();
@@ -189,7 +213,7 @@ public class MainView extends VerticalLayout {
         supplierGrid = new Grid<>(Supplier.class, false);
         // Supplier employee = new Supplier(1, "Cuong phan", Date.valueOf("1984-05-10"), "cuong.phan@axonactive.com", "0906678806", "Tân Bình HCM");
 //        listSuppliers = supplierRepository.findAll();
-        listSuppliers = service.getAllSuppliers();
+        listSuppliers = service.getAllSuppliers("");
 
         supplierGrid.addColumn(Supplier::getName).setHeader(new Html("<b>Name</b>"));
         supplierGrid.addColumn(Supplier::getDateOfBirth).setHeader(new Html("<b>Birthdate</b>"));
@@ -225,12 +249,25 @@ public class MainView extends VerticalLayout {
         productGrid = new Grid<>(Product.class, false);
 
 //        listProducts = productRepository.findAll();
-        listProducts = service.getAllProducts();
+        listProducts = service.getAllProducts("");
 
         productGrid.addColumn(Product::getProductName).setHeader(new Html("<b>Product Name</b>"));
         productGrid.addColumn(Product::getQuantity).setHeader(new Html("<b>Quantity</b>"));
         productGrid.addColumn(Product::getPrice).setHeader(new Html("<b>Price</b>"));
-        productGrid.addColumn(Product::getSupplierName).setHeader(new Html("<b>Supplier Name</b>"));
+
+//        productGrid.addColumn(Product::getSupplierName).setHeader(new Html("<b>Supplier Name</b>"));
+
+        productGrid.addColumn(new ComponentRenderer<>(item -> {
+            Select<String> select = new Select<>();
+            select.setItems("Cuong Phan", "Hang To");
+            select.addComponents("Cuong Phan");
+            select.addComponents("Hang To");
+            select.setValue("Cuong Phan");
+
+            // Layouts for placing the buttons
+            HorizontalLayout selectLayout = new HorizontalLayout(select);
+            return new VerticalLayout(selectLayout);
+        })).setHeader(new Html("<b>Supplier Name</b>"));
 
         productGrid.addColumn(new ComponentRenderer<>(item -> {
             // Button for editing person to backend
