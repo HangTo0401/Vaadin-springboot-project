@@ -5,7 +5,17 @@
          monitoring="autodetect"
          dynamicConfig="true">
 
-    <cache name="service"
+    <cache name="productCache"
+           maxElementsInMemory="100"
+           eternal="false"
+           overflowToDisk="false"
+           timeToLiveSeconds="300"
+           timeToIdleSeconds="0"
+           memoryStoreEvictionPolicy="LFU"
+           transactionalMode="off">
+    </cache>
+
+    <cache name="supplierCache"
            maxElementsInMemory="100"
            eternal="false"
            overflowToDisk="false"
