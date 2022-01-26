@@ -19,4 +19,7 @@ public interface SupplierRepository extends JpaRepository <Supplier, Long> {
             "where lower(s.firstname) like lower(concat('%', :searchTerm, '%')) " +
             "or lower(s.lastname) like lower(concat('%', :searchTerm, '%'))")
     List<Supplier> search(@Param("searchTerm") String searchTerm);
+
+    @Query("select CONCAT(s.firstname ,' ', s.lastname) as supplier_name from Supplier s ")
+    List<String> findAllSuppliersName();
 }
