@@ -9,11 +9,11 @@ import java.util.List;
 @Entity
 @Table(name = "supplier", schema = "demo_db")
 @Data
-public class Supplier {
+public class Supplier extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="id")
-    private long id;
+    private Long id;
 
     private String name;
 
@@ -44,7 +44,7 @@ public class Supplier {
 
     public Supplier(){}
 
-    public Supplier(long id, String firstname, String lastname, Date dateOfBirth, String email, String phoneNumber, String address) {
+    public Supplier(Long id, String firstname, String lastname, Date dateOfBirth, String email, String phoneNumber, String address) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -53,5 +53,10 @@ public class Supplier {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.address = address;
+    }
+
+    @Override
+    public String toString() {
+        return id + " " + firstname + " " + lastname;
     }
 }
