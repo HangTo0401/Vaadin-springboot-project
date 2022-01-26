@@ -7,7 +7,7 @@ import javax.persistence.*;
 @Entity
 @Table(name="product", schema = "demo_db")
 @Data
-public class Product extends AbstractEntity {
+public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="product_id")

@@ -1,15 +1,19 @@
 package com.example.demo.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 import java.util.Date;
 import java.util.List;
 
 @Entity
 @Table(name = "supplier", schema = "demo_db")
 @Data
-public class Supplier extends AbstractEntity {
+public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="id")
@@ -18,21 +22,28 @@ public class Supplier extends AbstractEntity {
     private String name;
 
     @Column(name="firstname")
+    @NotEmpty(message = "Firstname cannot be null")
     private String firstname;
 
     @Column(name="lastname")
+    @NotEmpty(message = "Lastname cannot be null")
     private String lastname;
 
     @Column(name="email")
+    @Email(message = "Email should be valid")
     private String email;
 
     @Column(name="address")
+    @NotEmpty
     private String address;
 
     @Column(name="date_of_birth")
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @JsonFormat(pattern = "MM/dd/yyyy")
     private Date dateOfBirth;
 
     @Column(name="phone_number")
+    @NotEmpty
     private String phoneNumber;
 
     public String getName() {
