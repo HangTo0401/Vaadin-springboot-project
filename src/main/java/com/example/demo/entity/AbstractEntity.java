@@ -1,37 +1,47 @@
 package com.example.demo.entity;
 
-import lombok.Data;
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Objects;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+@MappedSuperclass
+public abstract class AbstractEntity implements Serializable, Cloneable {
+    private static final long serialVersionUID = 1L;
 
-@Data
-public abstract class AbstractEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(unique=true, nullable=false)
     private Long id;
 
-    @Override
-    public int hashCode() {
-        if (getId() != null) {
-            return getId().hashCode();
-        }
+    public Long getId() {
+        return id;
+    }
 
-        return super.hashCode();
+    protected void setId(Long id) {
+        this.id = id;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || this != obj || this.getClass() != obj.getClass()) {
+        if (this == obj) {
+            return true;
+        }
+
+        if(this.id == null) {
             return false;
         }
 
-        AbstractEntity otherObj = (AbstractEntity) obj;
-        if (otherObj.getId() == null || getId() == null || otherObj.getId() != this.getId()) {
-            return false;
+        if (obj instanceof AbstractEntity && obj.getClass().equals(getClass())) {
+            return this.id.equals(((AbstractEntity) obj).id);
         }
 
-        return true;
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 43 * hash + Objects.hashCode(this.id);
+        return hash;
     }
 }
