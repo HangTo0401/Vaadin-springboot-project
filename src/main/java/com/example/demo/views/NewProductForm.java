@@ -14,6 +14,7 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
@@ -23,6 +24,8 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.shared.Registration;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class NewProductForm extends FormLayout {
     // Other fields omitted
@@ -52,10 +55,10 @@ public class NewProductForm extends FormLayout {
         this.suppliersList = suppliersList;
         addClassName("new-product-form");
         setPlaceHolder();
+        createSupplierComboBox();
         validateForm();
         binder.bindInstanceFields(this);
-
-        createSupplierComboBox();
+        this.addListener(NewProductForm.SaveEvent.class, this::saveNewProduct);
 
         add(headline,
             firstname,
@@ -80,6 +83,13 @@ public class NewProductForm extends FormLayout {
         quantity.setPlaceholder("Enter quantity...");
         price.setPlaceholder("Enter price...");
         supplierComboBox.setPlaceholder("Select supplier");
+    }
+
+    public Map<Long, String> convertListToMap(List<Supplier> list) {
+        // key = id, value - supplier name
+        Map<Long, String> map = list.stream().collect(
+                                Collectors.toMap(Supplier::getId, Supplier::getName));
+        return map;
     }
 
     private void saveNewProduct(NewProductForm.SaveEvent saveEvent) {
@@ -223,8 +233,7 @@ public class NewProductForm extends FormLayout {
             product.setLastname(lastname.getValue());
             product.setQuantity(Integer.valueOf(quantity.getValue()));
             product.setPrice(Double.valueOf(price.getValue()));
-            supplierComboBox.getValue() // => string
-//            product.setSupplier();
+            product.setSupplier(supplierComboBox.getValue());
             this.setProduct(product);
             this.setVisible(true);
             addClassName("create");

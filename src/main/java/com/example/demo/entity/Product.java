@@ -30,7 +30,6 @@ public class Product extends AbstractEntity {
     private Supplier supplier;
 
     private String productName;
-    private String supplierName;
 
     public String getProductName() {
         return this.firstname.concat(" ").concat(this.lastname);
