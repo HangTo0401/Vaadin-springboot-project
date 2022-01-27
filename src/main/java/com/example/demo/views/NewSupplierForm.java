@@ -55,7 +55,7 @@ public class NewSupplierForm extends FormLayout {
         setPlaceHolder();
         validateForm();
         binder.bindInstanceFields(this);
-        this.addListener(SaveEvent.class, this::saveNewSupplier);
+        this.addListener(NewSupplierForm.SaveEvent.class, this::saveNewSupplier);
 
         add(headline,
             firstname,
@@ -202,6 +202,11 @@ public class NewSupplierForm extends FormLayout {
                         "Your chosen birthdate is invalid, please try again!"
                 )
                 .bind(Supplier::getDateOfBirth, Supplier::setDateOfBirth);
+
+        // Phone number
+        binder.forField(phoneNumber).asRequired("Required")
+                .withValidator(phoneNumber -> !phoneNumber.isBlank() && !phoneNumber.isEmpty(), "Phone number is required field!")
+                .bind(Supplier::getPhoneNumber, Supplier::setPhoneNumber);
 
         // Email
         binder.forField(email).asRequired("Required")
