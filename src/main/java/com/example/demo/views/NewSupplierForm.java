@@ -3,6 +3,7 @@ package com.example.demo.views;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 
+import com.example.demo.service.MainService;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -32,8 +33,8 @@ import java.util.List;
 public class NewSupplierForm extends FormLayout {
     H2 headline = new H2("Supplier");
 
-    TextField firstName = new TextField("First name");
-    TextField lastName = new TextField("Last name");
+    TextField firstname = new TextField("First name");
+    TextField lastname = new TextField("Last name");
     DatePicker dateOfBirth = new DatePicker("Birthdate");
     TextField phoneNumber = new TextField("Phone Number");
     TextField address = new TextField("Address");
@@ -44,16 +45,21 @@ public class NewSupplierForm extends FormLayout {
 
     private Supplier supplier;
     Binder<Supplier> binder = new BeanValidationBinder<>(Supplier.class);
+    boolean isSavedSuccess = false;
 
-    public NewSupplierForm(List<Product> productsList, List<Supplier> suppliersList) {
+    private MainService service;
+
+    public NewSupplierForm(MainService service, List<Product> productsList, List<Supplier> suppliersList) {
+        this.service = service;
         addClassName("new-supplier-form");
         setPlaceHolder();
         validateForm();
         binder.bindInstanceFields(this);
+        this.addListener(SaveEvent.class, this::saveNewSupplier);
 
         add(headline,
-            firstName,
-            lastName,
+            firstname,
+            lastname,
             dateOfBirth,
             phoneNumber,
             email,
@@ -66,10 +72,27 @@ public class NewSupplierForm extends FormLayout {
      */
     public void setSupplier(Supplier supplier) {
         this.supplier = supplier;
-        if (supplier != null && supplier.getId() != null) {
-            binder.readBean(supplier);
+        binder.readBean(supplier);
+    }
+
+    private void saveNewSupplier(SaveEvent saveEvent) {
+        try {
+            service.createSupplier(saveEvent.getSupplier());
+            isSavedSuccess = true;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            isSavedSuccess = false;
+        }
+        if (isSavedSuccess) {
+            firstname.clear();
+            lastname.clear();
+            dateOfBirth.clear();
+            email.clear();
+            phoneNumber.clear();
+            address.clear();
+            showSuccessNotification("New supplier is created successfully!");
         } else {
-            binder.readBean(new Supplier(null, "", "", new java.util.Date(), "", "", ""));
+            showErrorNotification("New supplier cannot saved successfully!");
         }
     }
 
@@ -133,8 +156,8 @@ public class NewSupplierForm extends FormLayout {
     }
 
     private void setPlaceHolder() {
-        firstName.setPlaceholder("Enter firstname...");
-        lastName.setPlaceholder("Enter lastname...");
+        firstname.setPlaceholder("Enter firstname...");
+        lastname.setPlaceholder("Enter lastname...");
         dateOfBirth.setPlaceholder("Select birthdate with format MM/DD/YYYY...");
         phoneNumber.setPlaceholder("Enter mobile phone...");
         address.setPlaceholder("Enter address...");
@@ -146,25 +169,24 @@ public class NewSupplierForm extends FormLayout {
      */
     private void validateForm() {
         // Firstname
-        binder.forField(firstName).asRequired("*")
-                .withValidator(firstName -> !firstName.isBlank() && !firstName.isEmpty(), "Firstname is required field!")
-                .withValidator(firstName -> firstName.length() >= 5, "Firstname must contain at least 5 characters")
+        binder.forField(firstname).asRequired("Required")
+                .withValidator(firstname -> !firstname.isBlank() && !firstname.isEmpty(), "Firstname is required field!")
+                .withValidator(firstname -> firstname.length() >= 4, "Firstname must contain at least 4 characters")
                 .bind(Supplier::getFirstname, Supplier::setFirstname);
 
         // Lastname
-        binder.forField(lastName).asRequired("*")
-                .withValidator(lastName -> !lastName.isBlank() && !lastName.isEmpty(), "Lastname is required field!")
-                .withValidator(lastName -> lastName.length() >= 3, "Lastname must contain at least 3 characters")
+        binder.forField(lastname).asRequired("Required")
+                .withValidator(lastname -> !lastname.isBlank() && !lastname.isEmpty(), "Lastname is required field!")
+                .withValidator(lastname -> lastname.length() >= 2, "Lastname must contain at least 2 characters")
                 .bind(Supplier::getLastname, Supplier::setLastname);
 
         // Address
-        binder.forField(address).asRequired("*")
-                .withValidator(lastName -> !lastName.isBlank() && !lastName.isEmpty(), "Lastname is required field!")
-                .withValidator(lastName -> lastName.length() >= 5, "Lastname must contain at least 3 characters")
-                .bind(Supplier::getLastname, Supplier::setLastname);
+        binder.forField(address).asRequired("Required")
+                .withValidator(address -> !address.isBlank() && !address.isEmpty(), "Address is required field!")
+                .bind(Supplier::getAddress, Supplier::setAddress);
 
         // Birthdate
-        binder.forField(dateOfBirth).asRequired("*")
+        binder.forField(dateOfBirth).asRequired("Required")
                 .withConverter(new LocalDateToDateConverter())
                 .withValidator(
                         dateOfBirth -> !dateOfBirth.toString().isBlank() && !dateOfBirth.toString().isEmpty(),
@@ -182,7 +204,7 @@ public class NewSupplierForm extends FormLayout {
                 .bind(Supplier::getDateOfBirth, Supplier::setDateOfBirth);
 
         // Email
-        binder.forField(email).asRequired("*")
+        binder.forField(email).asRequired("Required")
                 .withValidator(email -> !email.isBlank() && !email.isEmpty(), "Email is required field!")
                 .withValidator(email -> EmailValidator.getInstance().isValid(email), "Email must be valid")
                 .bind(Supplier::getEmail, Supplier::setEmail);
@@ -207,8 +229,8 @@ public class NewSupplierForm extends FormLayout {
             showErrorNotification("New supplier is invalid !");
         } else {
             supplier.setId(null);
-            supplier.setFirstname(firstName.getValue());
-            supplier.setLastname(lastName.getValue());
+            supplier.setFirstname(firstname.getValue());
+            supplier.setLastname(lastname.getValue());
             supplier.setDateOfBirth(Date.valueOf(dateOfBirth.getValue()));
             supplier.setPhoneNumber(phoneNumber.getValue());
             supplier.setAddress(address.getValue());
@@ -222,5 +244,12 @@ public class NewSupplierForm extends FormLayout {
     private void showErrorNotification(String errMessage) {
         Notification notification = Notification.show(errMessage);
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        notification.setPosition(Notification.Position.TOP_CENTER);
+    }
+
+    private void showSuccessNotification(String successMessage) {
+        Notification notification = Notification.show(successMessage);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        notification.setPosition(Notification.Position.TOP_CENTER);
     }
 }
