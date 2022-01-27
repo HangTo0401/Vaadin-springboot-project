@@ -7,11 +7,11 @@ import javax.persistence.*;
 @Entity
 @Table(name="product", schema = "demo_db")
 @Data
-public class Product {
+public class Product extends AbstractEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="product_id")
-    private Long productId;
+    private Long id;
 
     @Column(name="firstname")
     private String firstname;
@@ -42,8 +42,8 @@ public class Product {
 
     public Product() {}
 
-    public Product(Long productId, String firstname, String lastname, int quantity, double price) {
-        this.productId = productId;
+    public Product(Long id, String firstname, String lastname, int quantity, double price) {
+        this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
         this.quantity = quantity;
@@ -52,6 +52,6 @@ public class Product {
 
     @Override
     public String toString() {
-        return productId + " " + firstname + " " + lastname;
+        return id + " " + firstname + " " + lastname;
     }
 }

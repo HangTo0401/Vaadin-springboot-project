@@ -11,7 +11,7 @@ import javax.persistence.ManyToOne;
 
 @Data
 public class ProductDTO {
-    private Long productId;
+    private Long id;
     private String firstname;
     private String lastname;
     private int quantity;
@@ -20,7 +20,7 @@ public class ProductDTO {
     private String supplierName;
 
     public ProductDTO(Product productEntity) {
-        this.productId = productEntity.getProductId();
+        this.id = productEntity.getId();
         this.firstname = productEntity.getFirstname();
         this.lastname = productEntity.getLastname();
         this.quantity = productEntity.getQuantity();
