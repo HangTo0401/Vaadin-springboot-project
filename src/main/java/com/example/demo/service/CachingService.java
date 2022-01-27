@@ -21,11 +21,13 @@ public class CachingService {
 
     public void addProductToCache(Product product) {
         Cache cache = cacheManager.getCache("productCache");
-        cache.putIfAbsent(product.getProductId(), product);
+        cache.putIfAbsent(product.getId(), product);
     }
 
     public void addSupplierToCache(Supplier supplier) {
         Cache cache = cacheManager.getCache("supplierCache");
         cache.putIfAbsent(supplier.getId(), supplier);
     }
+
+    // TODO: getEntryByKey
 }

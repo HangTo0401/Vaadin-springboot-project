@@ -13,37 +13,37 @@ import java.util.List;
 @Entity
 @Table(name = "supplier", schema = "demo_db")
 @Data
-public class Supplier {
+public class Supplier extends AbstractEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
     private Long id;
 
     private String name;
 
     @Column(name="firstname")
-    @NotEmpty(message = "Firstname cannot be null")
+//    @NotEmpty(message = "Firstname cannot be null")
     private String firstname;
 
     @Column(name="lastname")
-    @NotEmpty(message = "Lastname cannot be null")
+//    @NotEmpty(message = "Lastname cannot be null")
     private String lastname;
 
     @Column(name="email")
-    @Email(message = "Email should be valid")
+//    @Email(message = "Email should be valid")
     private String email;
 
     @Column(name="address")
-    @NotEmpty
+//    @NotEmpty(message = "Address cannot be null")
     private String address;
 
     @Column(name="date_of_birth")
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @JsonFormat(pattern = "MM/dd/yyyy")
+//    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+//    @JsonFormat(pattern = "MM/dd/yyyy")
     private Date dateOfBirth;
 
     @Column(name="phone_number")
-    @NotEmpty
+//    @NotEmpty(message = "Phone number cannot be null")
     private String phoneNumber;
 
     public String getName() {

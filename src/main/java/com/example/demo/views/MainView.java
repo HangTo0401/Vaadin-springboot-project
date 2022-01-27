@@ -8,7 +8,6 @@ import com.example.demo.service.MainService;
 
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -22,20 +21,23 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
+import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 
-import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 // implements Table.ColumnGenerator
 @Route(value = "")
-public class MainView extends VerticalLayout implements Serializable {
-    private static final long serialVersionUID = 6529685098267757690L;
+public class MainView extends VerticalLayout {
 
     private String[] buttonsName = new String[] {"Supplier", "Product"};
     private String DEFAULT_LAYOUT = "Supplier";
@@ -64,6 +66,9 @@ public class MainView extends VerticalLayout implements Serializable {
     private List<Supplier> listSuppliers = new ArrayList<>();
     private List<Product> listProducts = new ArrayList<>();
 
+    private ListDataProvider<Supplier> listSupplierDataProvider;
+    private ListDataProvider<Product> listProductDataProvider;
+
     private NewSupplierForm supplierForm;
     private NewProductForm productForm;
 
@@ -71,20 +76,29 @@ public class MainView extends VerticalLayout implements Serializable {
         this.service = service;
         this.supplierRepository = supplierRepository;
         this.productRepository = productRepository;
+        addClassName("main-view");
         configureNewSupplierForm();
         setupLayout(DEFAULT_LAYOUT);
 
-        supplierForm.addListener(NewSupplierForm.SaveEvent.class, this::updateSupplier);
-//        supplierForm.addListener(NewSupplierForm.DeleteEvent.class, this::deleteProduct);
-        supplierForm.addListener(NewSupplierForm.CloseEvent.class, e -> closeEditor());
+        // Event listener for NewSupplierForm
+        supplierForm.addListener(NewSupplierForm.SaveEvent.class, this::createNewSupplier);
+        supplierForm.addListener(NewSupplierForm.CloseEvent.class, e -> closeSupplierDialog());
+
+        // Event listener for NewProductForm
+        productForm.addListener(NewProductForm.SaveEvent.class, this::createNewProduct);
+        productForm.addListener(NewProductForm.CloseEvent.class, e -> closeProductDialog());
+
         add(mainLayout);
+        updateSupplierList();
+        closeSupplierDialog();
     }
 
     private void configureNewSupplierForm() {
-        supplierForm = new NewSupplierForm(Collections.emptyList(), Collections.emptyList());
+//        supplierForm = new NewSupplierForm(Collections.emptyList(), Collections.emptyList());
+        supplierForm = new NewSupplierForm(service, service.getAllProducts(""), service.getAllSuppliers(""));
         supplierForm.setWidth("25em");
 
-        productForm = new NewProductForm(Collections.emptyList(), Collections.emptyList());
+        productForm = new NewProductForm(service, service.getAllProducts(""), service.getAllSuppliers(""));
         productForm.setWidth("25em");
     }
 
@@ -117,7 +131,9 @@ public class MainView extends VerticalLayout implements Serializable {
 
         supplierDialog.add(supplierForm);
 
-        Button button = new Button(title, e -> supplierDialog.open());
+        Button button = new Button(title, e -> {
+            supplierDialog.open();
+        });
         button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         add(supplierDialog, button);
@@ -132,11 +148,75 @@ public class MainView extends VerticalLayout implements Serializable {
 
         productDialog.add(productForm);
 
-        Button button = new Button(title, e -> productDialog.open());
+        Button button = new Button(title, e -> {
+            productDialog.open();
+        });
         button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
+//        addContactButton.addClickListener(click -> addContact());
         add(productDialog, button);
         productActionButtonsLayout.add(button);
+    }
+
+    /**
+     * Create New Supplier
+     */
+    private void createNewSupplier(NewSupplierForm.SaveEvent supplier) {
+        Supplier newSupplier = supplier.getSupplier();
+        service.createSupplier(newSupplier);
+//        supplierCacheService.updateSupplierCache(saveSupplier.getSupplier());
+        supplierDialog.close();
+        updateSupplierList();
+    }
+
+    /**
+     * Update Supplier list
+     */
+    private void updateSupplierList() {
+        supplierGrid.setItems(service.getAllSuppliers(supplierFilterText.getValue()));
+    }
+
+    /**
+     * Edit Supplier
+     */
+    public void editSupplier(Supplier supplier) {
+        if (supplier == null) {
+            closeSupplierDialog();
+        } else {
+            supplierForm.setSupplier(supplier);
+            supplierForm.setVisible(true);
+            addClassName("editing");
+        }
+    }
+
+    /**
+     * Add New Supplier
+     */
+    private void addNewSupplier() {
+        supplierGrid.asSingleSelect().clear();
+        editSupplier(new Supplier());
+    }
+
+    private void closeSupplierDialog() {
+        supplierForm.setSupplier(null);
+        removeClassName("editing");
+        supplierDialog.close();
+    }
+
+    /**
+     * Create New Product
+     */
+    private void createNewProduct(NewProductForm.SaveEvent product) {
+        Product newProduct = product.getProduct();
+        service.createProduct(newProduct);
+//        supplierCacheService.updateSupplierCache(saveSupplier.getSupplier());
+        productDialog.close();
+        updateProductList();
+    }
+
+    private void closeProductDialog() {
+        productForm.setProduct(null);
+        removeClassName("editing");
+        productDialog.close();
     }
 
     private VerticalLayout createSupplierDialogLayout(Dialog dialog, String title) {
@@ -223,18 +303,13 @@ public class MainView extends VerticalLayout implements Serializable {
         createNewSupplierButton("Supplier", "New Supplier");
     }
 
-    private void updateSupplierList() {
-        listSuppliers = service.getAllSuppliers(supplierFilterText.getValue());
-        supplierGrid.setItems(listSuppliers);
-    }
-
     private void updateProductList() {
         listProducts = service.getAllProducts(productFilterText.getValue());
         productGrid.setItems(listProducts);
     }
 
     private void createProductSearchArea() {
-        productFilterText.setPlaceholder("Search");
+        productFilterText.setPlaceholder("Search by name...");
         productFilterText.setClearButtonVisible(true);
         productFilterText.setValueChangeMode(ValueChangeMode.LAZY);
         productFilterText.addValueChangeListener(e -> updateProductList());
@@ -281,11 +356,22 @@ public class MainView extends VerticalLayout implements Serializable {
 
     private void initSupplierGrid() {
         supplierGrid = new Grid<>(Supplier.class, false);
+        supplierGrid.addClassNames("supplier-grid");
 
         listSuppliers = service.getAllSuppliers("");
+        listSupplierDataProvider = DataProvider.ofCollection(listSuppliers);
+//        listSupplierDataProvider = new ListDataProvider<>(service.getAllSuppliers(""));
 
         supplierGrid.addColumn(Supplier::getName).setHeader(new Html("<b>Name</b>"));
-        supplierGrid.addColumn(Supplier::getDateOfBirth).setHeader(new Html("<b>Birthdate</b>"));
+
+        supplierGrid.addColumn(
+                dateOfBirth -> {
+                    LocalDate localDate = LocalDate.ofInstant(dateOfBirth.getDateOfBirth().toInstant(),
+                            ZoneId.systemDefault());
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                    return localDate.format(formatter);
+                }, "dateOfBirth").setHeader(new Html("<b>Birthdate</b>"));
+//                Supplier::getDateOfBirth).setHeader(new Html("<b>Birthdate</b>"));
         supplierGrid.addColumn(Supplier::getEmail).setHeader(new Html("<b>Email</b>"));
         supplierGrid.addColumn(Supplier::getPhoneNumber).setHeader(new Html("<b>Phone Number</b>"));
         supplierGrid.addColumn(Supplier::getAddress).setHeader(new Html("<b>Address</b>"));
@@ -311,6 +397,11 @@ public class MainView extends VerticalLayout implements Serializable {
             return new VerticalLayout(buttons);
         })).setHeader(new Html("<b>Actions</b>"));
         supplierGrid.setItems(listSuppliers);
+        supplierGrid.setDataProvider(listSupplierDataProvider);
+
+        supplierGrid.asSingleSelect().addValueChangeListener(event ->
+                editSupplier(event.getValue()));
+
         supplierVerticalLayout.add(supplierGrid);
     }
 
@@ -321,19 +412,8 @@ public class MainView extends VerticalLayout implements Serializable {
 
         productGrid.addColumn(Product::getProductName).setHeader(new Html("<b>Product Name</b>"));
         productGrid.addColumn(Product::getQuantity).setHeader(new Html("<b>Quantity</b>"));
-        productGrid.addColumn(Product::getPrice).setHeader(new Html("<b>Price</b>"));
-//        productGrid.addColumn(Product::getSupplierName).setHeader(new Html("<b>Supplier Name</b>"));
-
-        productGrid.addColumn(new ComponentRenderer<>(item -> {
-            Select<String> select = new Select<>();
-            List<String> listName = supplierRepository.findAllSuppliersName();
-            select.setItems(listName);
-            select.setValue(listName.get(0));
-
-            // Layouts for placing the buttons
-            HorizontalLayout selectLayout = new HorizontalLayout(select);
-            return new VerticalLayout(selectLayout);
-        })).setHeader(new Html("<b>Supplier Name</b>"));
+        productGrid.addColumn(new NumberRenderer<>(Product::getPrice, "$%(,.2f", Locale.US, "$0.00")).setHeader(new Html("<b>Price</b>"));
+        productGrid.addColumn(Product::getSupplierName).setHeader(new Html("<b>Supplier Name</b>"));
 
         productGrid.addColumn(new ComponentRenderer<>(item -> {
             // Button for editing person to backend
@@ -357,29 +437,5 @@ public class MainView extends VerticalLayout implements Serializable {
         })).setHeader(new Html("<b>Actions</b>"));
         productGrid.setItems(listProducts);
         productVerticalLayout.add(productGrid);
-    }
-
-    /**
-     * Saving Product Detail Form
-     *
-     * @author tailam
-     */
-    private void updateSupplier(supplierForm.SaveEvent evt) {
-        productService.updateProduct(evt.getProduct());
-        productCacheService.updateProductCache(evt.getProduct());
-        listDataProvider.refreshItem(evt.getProduct());
-        closeEditor();
-    }
-
-    /**
-     * Close Supplier Form
-     */
-    public void closeEditor() {
-        supplierForm.setSupplier(null);
-        supplierDialog.close();
-//        removeClassName("editing");
-//        supplierGrid.getDataProvider().refreshAll();
-        supplierGrid.setVisible(true);
-        mainLayout.setVisible(true);
     }
 }
