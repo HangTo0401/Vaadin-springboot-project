@@ -11,6 +11,8 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -43,7 +45,6 @@ public class ProductDetailForm extends FormLayout {
     private List<Supplier> suppliersList;
 
     private Product product;
-
     private boolean isUpdatedSuccess = false;
 
     public ProductDetailForm(MainService service, List<Product> productsList, List<Supplier> suppliersList) {
@@ -55,6 +56,7 @@ public class ProductDetailForm extends FormLayout {
         createSupplierComboBox();
         validateForm();
         binder.bindInstanceFields(this);
+        this.addListener(ProductDetailForm.SaveEvent.class, this::updateProduct);
 
         add(headline,
             firstname,
@@ -72,6 +74,26 @@ public class ProductDetailForm extends FormLayout {
         this.product = product;
         if (product != null && product.getId() != null) {
             binder.readBean(product);
+        }
+    }
+
+    private void updateProduct(ProductDetailForm.SaveEvent saveEvent) {
+        try {
+            service.updateProduct(saveEvent.getProduct());
+            isUpdatedSuccess = true;
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            isUpdatedSuccess = false;
+        }
+        if (isUpdatedSuccess) {
+            firstname.clear();
+            lastname.clear();
+            quantity.clear();
+            price.clear();
+            supplierComboBox.clear();
+            showSuccessNotification("New product is created successfully!");
+        } else {
+            showErrorNotification("New product cannot saved successfully!");
         }
     }
 
@@ -190,5 +212,17 @@ public class ProductDetailForm extends FormLayout {
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
                                                                   ComponentEventListener<T> listener) {
         return getEventBus().addListener(eventType, listener);
+    }
+
+    private void showErrorNotification(String errMessage) {
+        Notification notification = Notification.show(errMessage);
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        notification.setPosition(Notification.Position.TOP_CENTER);
+    }
+
+    private void showSuccessNotification(String successMessage) {
+        Notification notification = Notification.show(successMessage);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        notification.setPosition(Notification.Position.TOP_CENTER);
     }
 }
