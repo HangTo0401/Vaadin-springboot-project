@@ -95,10 +95,11 @@ public class MainView extends VerticalLayout {
         productForm.addListener(NewProductForm.CloseEvent.class, e -> closeProductDialog());
 
         // Event listener for supplierDetailForm
-//        supplierDetailForm.addListener(SupplierDetailForm.UpdateEvent.class, this::updateSupplier);
+//        supplierDetailForm.addListener(SupplierDetailForm.SaveEvent.class, this::updateSupplier);
         supplierDetailForm.addListener(SupplierDetailForm.CloseEvent.class, e -> closeSupplierDetailDialog());
 
-        // Event listener for supplierDetailForm
+        // Event listener for productDetailForm
+//        productDetailForm.addListener(ProductDetailForm.SaveEvent.class, this::updateProduct);
         productDetailForm.addListener(ProductDetailForm.CloseEvent.class, e -> closeProductDetailDialog());
 
         add(mainLayout);
@@ -388,18 +389,19 @@ public class MainView extends VerticalLayout {
         productGrid.addColumn(new NumberRenderer<>(Product::getPrice, "$%(,.2f", Locale.US, "$0.00")).setHeader(new Html("<b>Price</b>"));
         productGrid.addColumn(Product::getSupplierName).setHeader(new Html("<b>Supplier Name</b>"));
 
-        productGrid.addColumn(new ComponentRenderer<>(item -> {
+        productGrid.addColumn(new ComponentRenderer<>(product -> {
             // Button for editing person to backend
             Button editBtn = new Button("Edit", event -> {
                 productDetailDialog.open();
-                productGrid.getDataProvider().refreshItem(item);
+                productDetailForm.setProduct(product);
+                productGrid.getDataProvider().refreshItem(product);
             });
             editBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
 
             // Button for removing person
             Button removeBtn = new Button("Delete", event -> {
                 ListDataProvider<Product> dataProvider = (ListDataProvider<Product>) productGrid.getDataProvider();
-                dataProvider.getItems().remove(item);
+                dataProvider.getItems().remove(product);
                 dataProvider.refreshAll();
             });
             removeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
