@@ -107,14 +107,15 @@ public class MainService {
     }
 
     @CacheEvict(value = "supplierCache", key = "#id", allEntries = true)
-    public String deleteSupplierById(Long id) {
+    public boolean deleteSupplierById(Long id) {
+        boolean isFound = false;
         try {
             supplierRepository.deleteById(id);
-            boolean isFound = supplierRepository.existsById(id);
-            return isFound ? "Delete supplier successfully!" : "Fail to delete supplier!";
+            isFound = supplierRepository.existsById(id);
         } catch (Exception ex) {
-            return ex.toString();
+            ex.printStackTrace();
         }
+        return isFound;
     }
 
 //    @CachePut(value = "supplierCache", key = "#supplier.id")
@@ -190,14 +191,15 @@ public class MainService {
     }
 
     @CacheEvict(value = "productCache", key = "#id", allEntries = true)
-    public String deleteProductById(Long id) {
+    public boolean deleteProductById(Long id) {
+        boolean isFound = false;
         try {
             productRepository.deleteById(id);
-            boolean isFound = productRepository.existsById(id);
-            return isFound ? "Delete product successfully!" : "Fail to delete product!";
+            isFound = productRepository.existsById(id);
         } catch (Exception ex) {
-            return ex.toString();
+            ex.printStackTrace();
         }
+        return isFound;
     }
 
     @CachePut(value = "productCache", key = "#product.id")
