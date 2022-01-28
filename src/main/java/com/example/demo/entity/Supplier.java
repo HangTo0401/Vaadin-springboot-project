@@ -7,13 +7,16 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "supplier", schema = "demo_db")
 @Data
-public class Supplier extends AbstractEntity {
+public class Supplier extends AbstractEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
@@ -50,8 +53,15 @@ public class Supplier extends AbstractEntity {
         return this.firstname.concat(" ").concat(this.lastname);
     }
 
-    @OneToMany(mappedBy="supplier", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<Product> products;
+    //Parent class
+    @OneToMany(mappedBy="supplier", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<Product> products = new ArrayList<>();
+
+    public void setProducts(List<Product> products) {
+        // This will override the list that Hibernate is tracking.
+        this.products.clear();
+        this.products.addAll(products);
+    }
 
     public Supplier(){}
 
@@ -64,6 +74,21 @@ public class Supplier extends AbstractEntity {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.address = address;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Supplier supplier = (Supplier) o;
+        return Objects.equals(id, supplier.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + id.hashCode();
+        return result;
     }
 
     @Override
