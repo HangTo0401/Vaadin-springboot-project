@@ -40,7 +40,7 @@ public class MainService {
     @CacheEvict(allEntries = true)
     public void clearCache(){}
 
-    @Cacheable(value = "supplierCache", key = "'suppliers'")
+//    @Cacheable(value = "supplierCache", key = "'suppliers'")
     public List<Supplier> getAllSuppliers(String stringFilter) {
         log.info("MainService: findAll suppliers list");
         if (stringFilter == null || stringFilter.isEmpty()) {
@@ -72,6 +72,7 @@ public class MainService {
         return supplierNameList;
     }
 
+    // .findById(doctorId).orElseThrow(() -> new RuntimeException("doctor not found"));
     @CachePut(value = "supplierCache", key = "#result.id")
     public Supplier createSupplier(@RequestBody Supplier supplier) {
         // convert DTO to entity
@@ -98,12 +99,17 @@ public class MainService {
         return null;
     }
 
-    @CacheEvict(value = "supplierCache", key = "#id")
-    public void deleteSupplier(Long id) {
+    @CacheEvict(value = "supplierCache", key = "#supplier", allEntries = true)
+    public void deleteSupplier(Supplier supplier) {
+        supplierRepository.delete(supplier);
+    }
+
+    @CacheEvict(value = "supplierCache", key = "#id", allEntries = true)
+    public void deleteSupplierById(Long id) {
         supplierRepository.deleteById(id);
     }
 
-    @CachePut(value = "supplierCache", key = "#supplier.id")
+//    @CachePut(value = "supplierCache", key = "#supplier.id")
     public Supplier updateSupplier(Supplier supplier) {
         // convert DTO to Entity
 //        Supplier supplierRequest = modelMapper.map(supplierDTO, Supplier.class);
@@ -112,11 +118,14 @@ public class MainService {
 //
 //        // entity to DTO
 //        SupplierDTO supplierResponse = modelMapper.map(supplier, SupplierDTO.class);
-
+        if (supplier == null) {
+            System.err.println("Supplier is null!");
+            return null;
+        }
         return supplierRepository.save(supplier);
     }
 
-    @Cacheable(value = "productCache", key = "'products'")
+//    @Cacheable(value = "productCache", key = "'products'")
     public List<Product> getAllProducts(String stringFilter) {
         log.info("MainService: findAll products list");
         if (stringFilter == null || stringFilter.isEmpty()) {
@@ -157,7 +166,7 @@ public class MainService {
         return productRepository.save(product);
     }
 
-    @Cacheable(value = "productCache", key = "#productId", unless = "#result=null")
+    @Cacheable(value = "productCache", key = "#id", unless = "#result=null")
     public Product getProductById(Long productId) {
         Optional<Product> optionalProduct = productRepository.findById(productId);
         if (optionalProduct.isPresent()) {
@@ -167,9 +176,14 @@ public class MainService {
         return null;
     }
 
-    @CacheEvict(value = "productCache", key = "#productId")
-    public void deleteProduct(Long productId) {
-        productRepository.deleteById(productId);
+    @CacheEvict(value = "productCache", key = "#product", allEntries = true)
+    public void deleteProduct(Product product) {
+        productRepository.delete(product);
+    }
+
+    @CacheEvict(value = "productCache", key = "#id", allEntries = true)
+    public void deleteProductById(Long id) {
+        productRepository.deleteById(id);
     }
 
     @CachePut(value = "productCache", key = "#product.id")
@@ -181,7 +195,10 @@ public class MainService {
 //
 //        // entity to DTO
 //        ProductDTO productResponse = modelMapper.map(product, ProductDTO.class);
-
+        if (product == null) {
+            System.err.println("Product is null!");
+            return null;
+        }
         return productRepository.save(product);
     }
 }
