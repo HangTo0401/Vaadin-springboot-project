@@ -183,11 +183,13 @@ public class MainView extends VerticalLayout {
      * Delete Supplier in grid
      */
     private void deleteSupplier(Supplier supplier) {
-        service.deleteSupplierById(supplier.getId());
+        String message = service.deleteSupplierById(supplier.getId());
 //        productCacheService.deleteProductCache(event.getSupplier());
+        service.showSuccessNotification(message);
         ListDataProvider<Supplier> dataProvider = (ListDataProvider<Supplier>) supplierGrid.getDataProvider();
         dataProvider.getItems().remove(supplier);
         dataProvider.refreshAll();
+        updateProductList();
     }
 
     /**
@@ -213,8 +215,9 @@ public class MainView extends VerticalLayout {
      * Delete Product in grid
      */
     private void deleteProduct(Product product) {
-        service.deleteProductById(product.getId());
+        String message = service.deleteProductById(product.getId());
 //        productCacheService.deleteProductCache(event.getProduct());
+        service.showSuccessNotification(message);
         ListDataProvider<Product> dataProvider = (ListDataProvider<Product>) productGrid.getDataProvider();
         dataProvider.getItems().remove(product);
         dataProvider.refreshAll();
