@@ -21,6 +21,7 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.shared.Registration;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -73,6 +74,7 @@ public class ProductDetailForm extends FormLayout {
     public void setProduct(Product product) {
         this.product = product;
         if (product != null && product.getId() != null) {
+            supplierComboBox.setValue(product.getSupplier());
             binder.readBean(product);
         }
     }
@@ -91,9 +93,9 @@ public class ProductDetailForm extends FormLayout {
             quantity.clear();
             price.clear();
             supplierComboBox.clear();
-            showSuccessNotification("New product is created successfully!");
+            showSuccessNotification("Product is updated successfully!");
         } else {
-            showErrorNotification("New product cannot saved successfully!");
+            showErrorNotification("Product cannot be updated!");
         }
     }
 
@@ -136,6 +138,7 @@ public class ProductDetailForm extends FormLayout {
                 fireEvent(new ProductDetailForm.SaveEvent(this, product));
             }
         } catch (ValidationException e) {
+            showErrorNotification("Validation error count: " + e.getValidationErrors().size());
             e.printStackTrace();
         }
     }
@@ -143,32 +146,39 @@ public class ProductDetailForm extends FormLayout {
     private void validateForm() {
         // Firstname
         binder.forField(firstname).asRequired("Required")
-                .withValidator(firstname -> !firstname.isBlank() && !firstname.isEmpty(), "Firstname is required field!")
-                .withValidator(firstname -> firstname.length() >= 4, "Firstname must contain at least 4 characters")
-                .bind(Product::getFirstname, Product::setFirstname);
+              .withValidator(firstname -> !firstname.isBlank() && !firstname.isEmpty(), "Firstname is required field!")
+              .withValidator(firstname -> firstname.length() >= 3, "Firstname must contain at least 3 characters")
+              .withValidator(firstname -> StringUtils.isAlphaSpace(firstname), "Firstname must be a string")
+              .bind(Product::getFirstname, Product::setFirstname);
 
         // Lastname
         binder.forField(lastname).asRequired("Required")
-                .withValidator(lastname -> !lastname.isBlank() && !lastname.isEmpty(), "Lastname is required field!")
-                .withValidator(lastname -> lastname.length() >= 2, "Lastname must contain at least 2 characters")
-                .bind(Product::getLastname, Product::setLastname);
+              .withValidator(lastname -> !lastname.isBlank() && !lastname.isEmpty(), "Lastname is required field!")
+              .withValidator(lastname -> lastname.length() >= 2, "Lastname must contain at least 2 characters")
+              .withValidator(lastname -> StringUtils.isAlphaSpace(lastname), "Lastname must be a string")
+              .bind(Product::getLastname, Product::setLastname);
 
         // Quantity
         binder.forField(quantity).asRequired("Required")
-                .withValidator(quantity -> !quantity.isBlank() && !quantity.isEmpty(), "Quantity is required field!")
-                .withConverter(new StringToIntegerConverter("Must be a number"))
-                .bind(Product::getQuantity, Product::setQuantity);
+              .withValidator(quantity -> !quantity.isBlank() && !quantity.isEmpty(), "Quantity is required field!")
+              .withConverter(new StringToIntegerConverter("Must be a number"))
+              .bind(Product::getQuantity, Product::setQuantity);
 
         // Price
         binder.forField(price).asRequired("Required")
-                .withValidator(price -> !price.isBlank() && !price.isEmpty(), "Price is required field!")
-                .withValidator(
+              .withValidator(price -> !price.isBlank() && !price.isEmpty(), "Price is required field!")
+              .withValidator(
                         price -> Double.parseDouble(price.replace(",", "")) >= 1.00F &&
                                 Double.parseDouble(price.replace(",", "")) <= 10000.00F,
                         "Price must be between 1 and 10,000 \n with correction format: ##,###.##"
-                )
-                .withConverter(new StringToDoubleConverter("Must be a number"))
-                .bind(Product::getPrice, Product::setPrice);
+              )
+              .withConverter(new StringToDoubleConverter("Must be a number"))
+              .bind(Product::getPrice, Product::setPrice);
+
+        // Supplier
+        binder.forField(supplierComboBox).asRequired("Required")
+              .withValidator(supplierComboBox -> supplierComboBox.getFirstname().concat(" ").concat(supplierComboBox.getLastname()) != null && !"".equals(supplierComboBox.getFirstname().concat(" ").concat(supplierComboBox.getLastname())), "Supplier is required field!")
+              .bind(Product::getSupplier, Product::setSupplier);
     }
 
     /**
@@ -192,6 +202,15 @@ public class ProductDetailForm extends FormLayout {
      */
     public static class SaveEvent extends ProductDetailForm.ProductDetailFormEvent {
         SaveEvent(ProductDetailForm source, Product product) {
+            super(source, product);
+        }
+    }
+
+    /**
+     * Delete Event
+     */
+    public static class DeleteEvent extends ProductDetailForm.ProductDetailFormEvent {
+        DeleteEvent(ProductDetailForm source, Product product) {
             super(source, product);
         }
     }

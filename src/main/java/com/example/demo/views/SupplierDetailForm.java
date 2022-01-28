@@ -24,6 +24,7 @@ import com.vaadin.flow.data.converter.LocalDateToDateConverter;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.shared.Registration;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 
 import java.time.LocalDate;
@@ -101,9 +102,10 @@ public class SupplierDetailForm extends FormLayout {
             phoneNumber.clear();
             address.clear();
             email.clear();
+//            binder.getFields().forEach(f -> f.clear());
             showSuccessNotification("Supplier is updated successfully!");
         } else {
-            showErrorNotification("Supplier cannot be updated successfully!");
+            showErrorNotification("Supplier cannot be updated!");
         }
     }
 
@@ -135,8 +137,8 @@ public class SupplierDetailForm extends FormLayout {
         cancel.addClickShortcut(Key.ESCAPE);
         cancel.addClickListener(e -> fireEvent(new SupplierDetailForm.CloseEvent(this)));
 
-//        binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
-        binder.addStatusChangeListener(event -> save.setEnabled(true));
+        binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
+//        binder.addStatusChangeListener(event -> save.setEnabled(true));
 
         return new HorizontalLayout(save, cancel);
     }
@@ -148,6 +150,7 @@ public class SupplierDetailForm extends FormLayout {
                 fireEvent(new SupplierDetailForm.SaveEvent(this, supplier));
             }
         } catch (ValidationException e) {
+            showErrorNotification("Validation error count: " + e.getValidationErrors().size());
             e.printStackTrace();
         }
     }
@@ -155,29 +158,31 @@ public class SupplierDetailForm extends FormLayout {
     private void validateForm() {
         // Firstname
         binder.forField(firstname).asRequired("Required")
-                .withValidator(firstname -> !firstname.isBlank() && !firstname.isEmpty(), "Firstname is required field!")
-                .withValidator(firstname -> firstname.length() >= 4, "Firstname must contain at least 4 characters")
-                .bind(Supplier::getFirstname, Supplier::setFirstname);
+              .withValidator(firstname -> !firstname.isBlank() && !firstname.isEmpty(), "Firstname is required field!")
+              .withValidator(firstname -> firstname.length() >= 4, "Firstname must contain at least 4 characters")
+              .withValidator(firstname -> StringUtils.isAlphaSpace(firstname), "Firstname must be a string")
+              .bind(Supplier::getFirstname, Supplier::setFirstname);
 
         // Lastname
         binder.forField(lastname).asRequired("Required")
-                .withValidator(lastname -> !lastname.isBlank() && !lastname.isEmpty(), "Lastname is required field!")
-                .withValidator(lastname -> lastname.length() >= 2, "Lastname must contain at least 2 characters")
-                .bind(Supplier::getLastname, Supplier::setLastname);
+              .withValidator(lastname -> !lastname.isBlank() && !lastname.isEmpty(), "Lastname is required field!")
+              .withValidator(lastname -> lastname.length() >= 2, "Lastname must contain at least 2 characters")
+              .withValidator(lastname -> StringUtils.isAlphaSpace(lastname), "Lastname must be a string")
+              .bind(Supplier::getLastname, Supplier::setLastname);
 
         // Address
         binder.forField(address).asRequired("Required")
-                .withValidator(address -> !address.isBlank() && !address.isEmpty(), "Address is required field!")
-                .bind(Supplier::getAddress, Supplier::setAddress);
+              .withValidator(address -> !address.isBlank() && !address.isEmpty(), "Address is required field!")
+              .bind(Supplier::getAddress, Supplier::setAddress);
 
         // Birthdate
         binder.forField(dateOfBirth).asRequired("Required")
-                .withConverter(new LocalDateToDateConverter())
-                .withValidator(
+              .withConverter(new LocalDateToDateConverter())
+              .withValidator(
                         dateOfBirth -> !dateOfBirth.toString().isBlank() && !dateOfBirth.toString().isEmpty(),
                         "Birthdate is required field!"
-                )
-                .withValidator(
+              )
+              .withValidator(
                         dateOfBirth -> {
                             LocalDate localDate = LocalDate.ofInstant(dateOfBirth.toInstant(),
                                     ZoneId.systemDefault());
@@ -185,19 +190,19 @@ public class SupplierDetailForm extends FormLayout {
                             return localDate.format(formatter).length() == 9;
                         },
                         "Your chosen birthdate is invalid, please try again!"
-                )
-                .bind(Supplier::getDateOfBirth, Supplier::setDateOfBirth);
+              )
+              .bind(Supplier::getDateOfBirth, Supplier::setDateOfBirth);
 
         // Phone number
         binder.forField(phoneNumber).asRequired("Required")
-                .withValidator(phoneNumber -> !phoneNumber.isBlank() && !phoneNumber.isEmpty(), "Phone number is required field!")
-                .bind(Supplier::getPhoneNumber, Supplier::setPhoneNumber);
+              .withValidator(phoneNumber -> !phoneNumber.isBlank() && !phoneNumber.isEmpty(), "Phone number is required field!")
+              .bind(Supplier::getPhoneNumber, Supplier::setPhoneNumber);
 
         // Email
         binder.forField(email).asRequired("Required")
-                .withValidator(email -> !email.isBlank() && !email.isEmpty(), "Email is required field!")
-                .withValidator(email -> EmailValidator.getInstance().isValid(email), "Email must be valid")
-                .bind(Supplier::getEmail, Supplier::setEmail);
+              .withValidator(email -> !email.isBlank() && !email.isEmpty(), "Email is required field!")
+              .withValidator(email -> EmailValidator.getInstance().isValid(email), "Email must be valid")
+              .bind(Supplier::getEmail, Supplier::setEmail);
     }
 
     /**
@@ -222,6 +227,15 @@ public class SupplierDetailForm extends FormLayout {
     public static class SaveEvent extends SupplierDetailForm.SupplierDetailFormEvent {
         SaveEvent(SupplierDetailForm source, Supplier supplier) {
             super(source, supplier);
+        }
+    }
+
+    /**
+     * Delete Event
+     */
+    public class DeleteEvent extends SupplierDetailForm.SupplierDetailFormEvent {
+        DeleteEvent(SupplierDetailForm source) {
+            super(source, null);
         }
     }
 
