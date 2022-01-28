@@ -10,15 +10,10 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 
 import com.vaadin.flow.data.provider.DataProvider;
@@ -28,6 +23,7 @@ import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -36,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+@Theme(themeFolder = "demo")
 @Route(value = "")
 public class MainView extends VerticalLayout {
 
@@ -72,8 +69,8 @@ public class MainView extends VerticalLayout {
     private ListDataProvider<Supplier> listSupplierDataProvider;
     private ListDataProvider<Product> listProductDataProvider;
 
-    private NewSupplierForm supplierForm;
-    private NewProductForm productForm;
+    private NewSupplierForm newSupplierForm;
+    private NewProductForm newProductForm;
 
     private SupplierDetailForm supplierDetailForm;
     private ProductDetailForm productDetailForm;
@@ -86,35 +83,19 @@ public class MainView extends VerticalLayout {
         configureForms();
         setupLayout(DEFAULT_LAYOUT);
 
-        // Event listener for NewSupplierForm
-        supplierForm.addListener(NewSupplierForm.SaveEvent.class, this::createNewSupplier);
-        supplierForm.addListener(NewSupplierForm.CloseEvent.class, e -> closeSupplierDialog());
-
-        // Event listener for NewProductForm
-        productForm.addListener(NewProductForm.SaveEvent.class, this::createNewProduct);
-        productForm.addListener(NewProductForm.CloseEvent.class, e -> closeProductDialog());
-
         // Event listener for supplierDetailForm
-//        supplierDetailForm.addListener(SupplierDetailForm.SaveEvent.class, this::updateSupplier);
+        supplierDetailForm.addListener(SupplierDetailForm.SaveEvent.class, this::updateSupplier);
         supplierDetailForm.addListener(SupplierDetailForm.CloseEvent.class, e -> closeSupplierDetailDialog());
 
         // Event listener for productDetailForm
-//        productDetailForm.addListener(ProductDetailForm.SaveEvent.class, this::updateProduct);
+        productDetailForm.addListener(ProductDetailForm.SaveEvent.class, this::updateProduct);
         productDetailForm.addListener(ProductDetailForm.CloseEvent.class, e -> closeProductDetailDialog());
 
         add(mainLayout);
         updateSupplierList();
-        closeSupplierDialog();
     }
 
     private void configureForms() {
-//        supplierForm = new NewSupplierForm(Collections.emptyList(), Collections.emptyList());
-        supplierForm = new NewSupplierForm(service, service.getAllProducts(""), service.getAllSuppliers(""));
-        supplierForm.setWidth("25em");
-
-        productForm = new NewProductForm(service, service.getAllProducts(""), service.getAllSuppliers(""));
-        productForm.setWidth("25em");
-
         supplierDetailForm = new SupplierDetailForm(service, service.getAllProducts(""), service.getAllSuppliers(""));
         supplierDetailForm.setWidth("25em");
 
@@ -145,9 +126,17 @@ public class MainView extends VerticalLayout {
 
     private void createNewSupplierButton(String btnName, String title) {
         newSupplierDialog.getElement().setAttribute("aria-label", title);
-        newSupplierDialog.add(supplierForm);
 
         Button button = new Button(title, e -> {
+            newSupplierDialog = new Dialog();
+            newSupplierForm = new NewSupplierForm(newSupplierDialog,
+                                                  supplierGrid,
+                                                  supplierFilterText.getValue(),
+                                                  service,
+                                                  service.getAllProducts(""),
+                                                  service.getAllSuppliers(""));
+            newSupplierForm.setWidth("25em");
+            newSupplierDialog.add(newSupplierForm);
             newSupplierDialog.open();
         });
         button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -158,26 +147,47 @@ public class MainView extends VerticalLayout {
 
     private void createNewProductButton(String btnName, String title) {
         newProductDialog.getElement().setAttribute("aria-label", title);
-        newProductDialog.add(productForm);
 
         Button button = new Button(title, e -> {
+            newProductDialog = new Dialog();
+            newProductForm = new NewProductForm(newProductDialog,
+                                                productGrid,
+                                                productFilterText.getValue(),
+                                                service,
+                                                service.getAllProducts(""),
+                                                service.getAllSuppliers(""));
+            newProductForm.setWidth("25em");
+            newProductDialog.add(newProductForm);
             newProductDialog.open();
         });
         button.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-//        addContactButton.addClickListener(click -> addContact());
+
         add(newProductDialog, button);
         productActionButtonsLayout.add(button);
     }
 
     /**
-     * Create New Supplier
+     * Update Supplier
      */
-    private void createNewSupplier(NewSupplierForm.SaveEvent supplier) {
-        Supplier newSupplier = supplier.getSupplier();
-        service.createSupplier(newSupplier);
-//        supplierCacheService.updateSupplierCache(saveSupplier.getSupplier());
-        newSupplierDialog.close();
+    private void updateSupplier(SupplierDetailForm.SaveEvent event) {
+        Supplier updateSupplier = event.getSupplier();
+        service.updateSupplier(updateSupplier);
+        listSupplierDataProvider.refreshItem(updateSupplier);
+        supplierGrid.getDataProvider().refreshItem(updateSupplier);
+//        supplierDetailForm.setVisible(false);
+        closeSupplierDetailDialog();
         updateSupplierList();
+    }
+
+    /**
+     * Delete Supplier in grid
+     */
+    private void deleteSupplier(Supplier supplier) {
+        service.deleteSupplierById(supplier.getId());
+//        productCacheService.deleteProductCache(event.getSupplier());
+        ListDataProvider<Supplier> dataProvider = (ListDataProvider<Supplier>) supplierGrid.getDataProvider();
+        dataProvider.getItems().remove(supplier);
+        dataProvider.refreshAll();
     }
 
     /**
@@ -188,59 +198,40 @@ public class MainView extends VerticalLayout {
     }
 
     /**
-     * Edit Supplier
+     * Update Product
      */
-    public void editSupplier(Supplier supplier) {
-        if (supplier == null) {
-            closeSupplierDialog();
-        } else {
-            supplierForm.setSupplier(supplier);
-            supplierForm.setVisible(true);
-            addClassName("editing");
-        }
-    }
-
-    /**
-     * Add New Supplier
-     */
-    private void addNewSupplier() {
-        supplierGrid.asSingleSelect().clear();
-        editSupplier(new Supplier());
-    }
-
-    /**
-     * Close Supplier dialog
-     */
-    private void closeSupplierDialog() {
-        supplierForm.setSupplier(null);
-        removeClassName("editing");
-        newSupplierDialog.close();
-    }
-
-    /**
-     * Create New Product
-     */
-    private void createNewProduct(NewProductForm.SaveEvent product) {
-        Product newProduct = product.getProduct();
-        service.createProduct(newProduct);
-//        supplierCacheService.updateSupplierCache(saveSupplier.getSupplier());
-        newProductDialog.close();
+    private void updateProduct(ProductDetailForm.SaveEvent product) {
+        Product updateProduct = product.getProduct();
+        service.updateProduct(updateProduct);
+        listProductDataProvider.refreshItem(updateProduct);
+        productGrid.getDataProvider().refreshItem(updateProduct);
+        closeProductDetailDialog();
         updateProductList();
+    }
+
+    /**
+     * Delete Product in grid
+     */
+    private void deleteProduct(Product product) {
+        service.deleteProductById(product.getId());
+//        productCacheService.deleteProductCache(event.getProduct());
+        ListDataProvider<Product> dataProvider = (ListDataProvider<Product>) productGrid.getDataProvider();
+        dataProvider.getItems().remove(product);
+        dataProvider.refreshAll();
     }
 
     /**
      * Update Product list
      */
     private void updateProductList() {
-        List<Product> listProduct = service.getAllProducts(productFilterText.getValue());
-        productGrid.setItems(listProduct);
+        productGrid.setItems(service.getAllProducts(productFilterText.getValue()));
     }
 
     /**
      * Close Product dialog
      */
-    private void closeProductDialog() {
-        productForm.setProduct(null);
+    private void closeNewProductDialog() {
+        newProductForm.setProduct(null);
         removeClassName("editing");
         newProductDialog.close();
     }
@@ -339,43 +330,38 @@ public class MainView extends VerticalLayout {
 
         supplierGrid.addColumn(Supplier::getName).setHeader(new Html("<b>Name</b>"));
         supplierGrid.addColumn(
-                dateOfBirth -> {
-                    LocalDate localDate = LocalDate.ofInstant(dateOfBirth.getDateOfBirth().toInstant(),
-                            ZoneId.systemDefault());
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-                    return localDate.format(formatter);
-                }, "dateOfBirth").setHeader(new Html("<b>Birthdate</b>"));
+                                dateOfBirth -> {
+                                    LocalDate localDate = LocalDate.ofInstant(dateOfBirth.getDateOfBirth().toInstant(),
+                                            ZoneId.systemDefault());
+                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                                    return localDate.format(formatter);
+                                }, "dateOfBirth"
+                    ).setHeader(new Html("<b>Birthdate</b>"));
         supplierGrid.addColumn(Supplier::getEmail).setHeader(new Html("<b>Email</b>"));
         supplierGrid.addColumn(Supplier::getPhoneNumber).setHeader(new Html("<b>Phone Number</b>"));
         supplierGrid.addColumn(Supplier::getAddress).setHeader(new Html("<b>Address</b>"));
 
         supplierGrid.addColumn(new ComponentRenderer<>(supplier -> {
-            // Button for editing supplier and update to database and cache
-            Button editBtn = new Button("Edit", event -> {
-                supplierDetailDialog.open();
-                supplierDetailForm.setSupplier(supplier);
-                supplierGrid.getDataProvider().refreshItem(supplier);
-            });
-            editBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
+                        // Button for editing supplier and update to database and cache
+                        Button editBtn = new Button("Edit", event -> {
+                            supplierDetailDialog.open();
+                            supplierDetailForm.setSupplier(supplier);
+                            supplierGrid.getDataProvider().refreshItem(supplier);
+                        });
+                        editBtn.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
 
-            // Button for removing supplier and update to database and cache
-            Button removeBtn = new Button("Delete", event -> {
-                ListDataProvider<Supplier> dataProvider = (ListDataProvider<Supplier>) supplierGrid.getDataProvider();
-                dataProvider.getItems().remove(supplier);
-                dataProvider.refreshAll();
-            });
-            removeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
+                        // Button for removing supplier and update to database and cache
+                        Button removeBtn = new Button("Delete", event -> {
+                            deleteSupplier(supplier);
+                        });
+                        removeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
-            // Layouts for placing the buttons
-            HorizontalLayout buttons = new HorizontalLayout(editBtn, removeBtn);
-            return new VerticalLayout(buttons);
-        })).setHeader(new Html("<b>Actions</b>"));
+                        // Layouts for placing the buttons
+                        HorizontalLayout buttons = new HorizontalLayout(editBtn, removeBtn);
+                        return new VerticalLayout(buttons);
+                    })).setHeader(new Html("<b>Actions</b>"));
         supplierGrid.setItems(listSuppliers);
         supplierGrid.setDataProvider(listSupplierDataProvider);
-
-        supplierGrid.asSingleSelect().addValueChangeListener(event ->
-                editSupplier(event.getValue()));
-
         supplierVerticalLayout.add(supplierGrid);
     }
 
@@ -383,6 +369,7 @@ public class MainView extends VerticalLayout {
         productGrid = new Grid<>(Product.class, false);
 
         listProducts = service.getAllProducts("");
+        listProductDataProvider = DataProvider.ofCollection(listProducts);
 
         productGrid.addColumn(Product::getProductName).setHeader(new Html("<b>Product Name</b>"));
         productGrid.addColumn(Product::getQuantity).setHeader(new Html("<b>Quantity</b>"));
@@ -400,9 +387,7 @@ public class MainView extends VerticalLayout {
 
             // Button for removing person
             Button removeBtn = new Button("Delete", event -> {
-                ListDataProvider<Product> dataProvider = (ListDataProvider<Product>) productGrid.getDataProvider();
-                dataProvider.getItems().remove(product);
-                dataProvider.refreshAll();
+                deleteProduct(product);
             });
             removeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
@@ -411,6 +396,7 @@ public class MainView extends VerticalLayout {
             return new VerticalLayout(buttons);
         })).setHeader(new Html("<b>Actions</b>"));
         productGrid.setItems(listProducts);
+        productGrid.setDataProvider(listProductDataProvider);
         productVerticalLayout.add(productGrid);
     }
 }
