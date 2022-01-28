@@ -27,7 +27,8 @@ public class Product extends AbstractEntity implements Serializable {
     @Column(name="price")
     private double price;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    // Children
+    @ManyToOne
     @JoinColumn(name = "supplier_id", nullable=false)
     private Supplier supplier;
 

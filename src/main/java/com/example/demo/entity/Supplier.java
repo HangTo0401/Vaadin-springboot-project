@@ -54,7 +54,7 @@ public class Supplier extends AbstractEntity implements Serializable {
     }
 
     //Parent class
-    @OneToMany(mappedBy="supplier", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(mappedBy="supplier", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products = new ArrayList<>();
 
     public void setProducts(List<Product> products) {
