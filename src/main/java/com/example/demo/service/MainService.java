@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.ProductDTO;
-import com.example.demo.dto.SupplierDTO;
+import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 import com.example.demo.repository.ProductRepository;
@@ -18,10 +17,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class MainService {
@@ -32,7 +29,7 @@ public class MainService {
     private ProductRepository productRepository;
 
     @Autowired
-    private CachingService cachingService;
+    private CacheService cacheService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -42,7 +39,7 @@ public class MainService {
     @CacheEvict(allEntries = true)
     public void clearCache(){}
 
-//    @Cacheable(value = "supplierCache", key = "'suppliers'")
+    @Cacheable(cacheNames = "", key = "'suppliers'", value = "supplierCache")
     public List<Supplier> getAllSuppliers(String stringFilter) {
         log.info("MainService: findAll suppliers list");
         if (stringFilter == null || stringFilter.isEmpty()) {
@@ -52,7 +49,7 @@ public class MainService {
 //            List<SupplierDTO> supplierResponse = supplierList.stream().map(supplier -> modelMapper.map(supplier, SupplierDTO.class)).collect(Collectors.toList());;
 
             for (Supplier supplier : supplierList) {
-                cachingService.addSupplierToCache(supplier);
+                cacheService.addSupplierToCache(supplier);
             }
             return supplierList;
         } else {
@@ -62,7 +59,7 @@ public class MainService {
 //            List<SupplierDTO> supplierResponse = supplierList.stream().map(supplier -> modelMapper.map(supplier, SupplierDTO.class)).collect(Collectors.toList());;
 
             for (Supplier supplier : supplierList) {
-                cachingService.addSupplierToCache(supplier);
+                cacheService.addSupplierToCache(supplier);
             }
             return supplierList;
         }
@@ -118,7 +115,7 @@ public class MainService {
         return isFound;
     }
 
-//    @CachePut(value = "supplierCache", key = "#supplier.id")
+    @CachePut(value = "supplierCache", key = "#supplier.id")
     public Supplier updateSupplier(Supplier supplier) {
         // convert DTO to Entity
 //        Supplier supplierRequest = modelMapper.map(supplierDTO, Supplier.class);
@@ -134,7 +131,7 @@ public class MainService {
         return supplierRepository.save(supplier);
     }
 
-//    @Cacheable(value = "productCache", key = "'products'")
+    @Cacheable(value = "productCache", key = "'products'")
     public List<Product> getAllProducts(String stringFilter) {
         log.info("MainService: findAll products list");
         if (stringFilter == null || stringFilter.isEmpty()) {
@@ -144,7 +141,7 @@ public class MainService {
 //            List<ProductDTO> productResponse = productList.stream().map(product -> modelMapper.map(product, ProductDTO.class)).collect(Collectors.toList());;
 
             for (Product product : productList) {
-                cachingService.addProductToCache(product);
+                cacheService.addProductToCache(product);
             }
             return productList;
         } else {
@@ -153,7 +150,7 @@ public class MainService {
 //            List<ProductDTO> productResponse = productList.stream().map(product -> modelMapper.map(product, ProductDTO.class)).collect(Collectors.toList());;
 
             for (Product product : productList) {
-                cachingService.addProductToCache(product);
+                cacheService.addProductToCache(product);
             }
             return productList;
         }

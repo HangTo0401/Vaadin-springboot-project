@@ -5,23 +5,69 @@
          monitoring="autodetect"
          dynamicConfig="true">
 
-    <cache name="productCache"
-           maxElementsInMemory="100"
-           eternal="false"
-           overflowToDisk="false"
-           timeToLiveSeconds="300"
-           timeToIdleSeconds="0"
-           memoryStoreEvictionPolicy="LFU"
-           transactionalMode="off">
+<!--    <cache name="productCache"-->
+<!--           maxElementsInMemory="100"-->
+<!--           eternal="false"-->
+<!--           overflowToDisk="false"-->
+<!--           timeToLiveSeconds="300"-->
+<!--           timeToIdleSeconds="0"-->
+<!--           memoryStoreEvictionPolicy="LFU"-->
+<!--           transactionalMode="off">-->
+<!--    </cache>-->
+
+<!--    <cache name="supplierCache"-->
+<!--           maxElementsInMemory="100"-->
+<!--           eternal="false"-->
+<!--           overflowToDisk="false"-->
+<!--           timeToLiveSeconds="300"-->
+<!--           timeToIdleSeconds="0"-->
+<!--           memoryStoreEvictionPolicy="LFU"-->
+<!--           transactionalMode="off">-->
+<!--    </cache>-->
+
+    <cache alias="supplierCache">
+        <key-type>java.lang.String</key-type>
+        <value-type>java.util.List</value-type>
+        <expiry>
+            <ttl unit="seconds">30</ttl>
+        </expiry>
+
+        <listeners>
+            <listener>
+                <class>com.example.demo.cache.CacheLogger</class>
+                <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
+                <event-ordering-mode>UNORDERED</event-ordering-mode>
+                <events-to-fire-on>CREATED</events-to-fire-on>
+                <events-to-fire-on>EXPIRED</events-to-fire-on>
+            </listener>
+        </listeners>
+
+        <resources>
+            <heap unit="entries">2</heap>
+            <offheap unit="MB">10</offheap>
+        </resources>
     </cache>
 
-    <cache name="supplierCache"
-           maxElementsInMemory="100"
-           eternal="false"
-           overflowToDisk="false"
-           timeToLiveSeconds="300"
-           timeToIdleSeconds="0"
-           memoryStoreEvictionPolicy="LFU"
-           transactionalMode="off">
+    <cache alias="productCache">
+        <key-type>java.lang.String</key-type>
+        <value-type>java.util.List</value-type>
+        <expiry>
+            <ttl unit="seconds">30</ttl>
+        </expiry>
+
+        <listeners>
+            <listener>
+                <class>com.example.demo.cache.CacheLogger</class>
+                <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
+                <event-ordering-mode>UNORDERED</event-ordering-mode>
+                <events-to-fire-on>CREATED</events-to-fire-on>
+                <events-to-fire-on>EXPIRED</events-to-fire-on>
+            </listener>
+        </listeners>
+
+        <resources>
+            <heap unit="entries">2</heap>
+            <offheap unit="MB">10</offheap>
+        </resources>
     </cache>
 </ehcache>
