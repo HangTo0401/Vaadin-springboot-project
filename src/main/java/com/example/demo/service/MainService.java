@@ -6,6 +6,8 @@ import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SupplierRepository;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,8 +107,14 @@ public class MainService {
     }
 
     @CacheEvict(value = "supplierCache", key = "#id", allEntries = true)
-    public void deleteSupplierById(Long id) {
-        supplierRepository.deleteById(id);
+    public String deleteSupplierById(Long id) {
+        try {
+            supplierRepository.deleteById(id);
+            boolean isFound = supplierRepository.existsById(id);
+            return isFound ? "Delete supplier successfully!" : "Fail to delete supplier!";
+        } catch (Exception ex) {
+            return ex.toString();
+        }
     }
 
 //    @CachePut(value = "supplierCache", key = "#supplier.id")
@@ -182,8 +190,14 @@ public class MainService {
     }
 
     @CacheEvict(value = "productCache", key = "#id", allEntries = true)
-    public void deleteProductById(Long id) {
-        productRepository.deleteById(id);
+    public String deleteProductById(Long id) {
+        try {
+            productRepository.deleteById(id);
+            boolean isFound = productRepository.existsById(id);
+            return isFound ? "Delete product successfully!" : "Fail to delete product!";
+        } catch (Exception ex) {
+            return ex.toString();
+        }
     }
 
     @CachePut(value = "productCache", key = "#product.id")
@@ -200,5 +214,17 @@ public class MainService {
             return null;
         }
         return productRepository.save(product);
+    }
+
+    public void showErrorNotification(String errMessage) {
+        Notification notification = Notification.show(errMessage);
+        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        notification.setPosition(Notification.Position.TOP_CENTER);
+    }
+
+    public void showSuccessNotification(String successMessage) {
+        Notification notification = Notification.show(successMessage);
+        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+        notification.setPosition(Notification.Position.TOP_CENTER);
     }
 }
