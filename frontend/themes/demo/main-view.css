@@ -1,0 +1,10 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+/* Workaround for https://github.com/vaadin/flow/issues/8256 */
+:host([hidden]) {
+  display: none !important;
+  background-color: yellow;
+}
