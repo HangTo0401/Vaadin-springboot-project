@@ -14,8 +14,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 
@@ -121,11 +119,11 @@ public class NewProductForm extends FormLayout {
             quantity.clear();
             price.clear();
             supplierComboBox.clear();
-            showSuccessNotification("New product is created successfully!");
+            service.showSuccessNotification("New product is created successfully!");
             grid.setItems(service.getAllProducts(filterText));
             dialog.close();
         } else {
-            showErrorNotification("New product cannot be saved!");
+            service.showErrorNotification("New product cannot be saved!");
         }
     }
 
@@ -163,7 +161,7 @@ public class NewProductForm extends FormLayout {
                 fireEvent(new NewProductForm.SaveEvent(this, product));
             }
         } catch (ValidationException e) {
-            showErrorNotification("Validation error count: " + e.getValidationErrors().size());
+            service.showErrorNotification("Validation error count: " + e.getValidationErrors().size());
             e.printStackTrace();
         }
     }
@@ -252,7 +250,7 @@ public class NewProductForm extends FormLayout {
 
     private void addNewProduct(Product product) {
         if (product == null) {
-            showErrorNotification("New product is invalid !");
+            service.showErrorNotification("New product is invalid !");
         } else {
             product.setId(null);
             product.setFirstname(firstname.getValue());
@@ -264,17 +262,5 @@ public class NewProductForm extends FormLayout {
             this.setVisible(true);
             addClassName("create");
         }
-    }
-
-    private void showErrorNotification(String errMessage) {
-        Notification notification = Notification.show(errMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        notification.setPosition(Notification.Position.TOP_CENTER);
-    }
-
-    private void showSuccessNotification(String successMessage) {
-        Notification notification = Notification.show(successMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        notification.setPosition(Notification.Position.TOP_CENTER);
     }
 }

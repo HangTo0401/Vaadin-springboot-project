@@ -11,8 +11,6 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
@@ -93,9 +91,9 @@ public class ProductDetailForm extends FormLayout {
             quantity.clear();
             price.clear();
             supplierComboBox.clear();
-            showSuccessNotification("Product is updated successfully!");
+            service.showSuccessNotification("Product is updated successfully!");
         } else {
-            showErrorNotification("Product cannot be updated!");
+            service.showErrorNotification("Product cannot be updated!");
         }
     }
 
@@ -138,7 +136,7 @@ public class ProductDetailForm extends FormLayout {
                 fireEvent(new ProductDetailForm.SaveEvent(this, product));
             }
         } catch (ValidationException e) {
-            showErrorNotification("Validation error count: " + e.getValidationErrors().size());
+            service.showErrorNotification("Validation error count: " + e.getValidationErrors().size());
             e.printStackTrace();
         }
     }
@@ -231,17 +229,5 @@ public class ProductDetailForm extends FormLayout {
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
                                                                   ComponentEventListener<T> listener) {
         return getEventBus().addListener(eventType, listener);
-    }
-
-    private void showErrorNotification(String errMessage) {
-        Notification notification = Notification.show(errMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        notification.setPosition(Notification.Position.TOP_CENTER);
-    }
-
-    private void showSuccessNotification(String successMessage) {
-        Notification notification = Notification.show(successMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        notification.setPosition(Notification.Position.TOP_CENTER);
     }
 }

@@ -103,9 +103,9 @@ public class SupplierDetailForm extends FormLayout {
             address.clear();
             email.clear();
 //            binder.getFields().forEach(f -> f.clear());
-            showSuccessNotification("Supplier is updated successfully!");
+            service.showSuccessNotification("Supplier is updated successfully!");
         } else {
-            showErrorNotification("Supplier cannot be updated!");
+            service.showErrorNotification("Supplier cannot be updated!");
         }
     }
 
@@ -116,13 +116,6 @@ public class SupplierDetailForm extends FormLayout {
         phoneNumber.setPlaceholder("Enter mobile phone...");
         address.setPlaceholder("Enter address...");
         email.setPlaceholder("Enter email...");
-    }
-
-    private void createSupplierComboBox() {
-        supplierComboBox.setAllowCustomValue(true);
-        ComboBox.ItemFilter<Supplier> filter = (supplier, filterString) -> supplier.getName().toLowerCase().startsWith(filterString.toLowerCase());
-        supplierComboBox.setItems(filter, suppliersList);
-        supplierComboBox.setItemLabelGenerator(Supplier::getName);
     }
 
     private HorizontalLayout createButtonsLayout() {
@@ -150,7 +143,7 @@ public class SupplierDetailForm extends FormLayout {
                 fireEvent(new SupplierDetailForm.SaveEvent(this, supplier));
             }
         } catch (ValidationException e) {
-            showErrorNotification("Validation error count: " + e.getValidationErrors().size());
+            service.showErrorNotification("Validation error count: " + e.getValidationErrors().size());
             e.printStackTrace();
         }
     }
@@ -255,17 +248,5 @@ public class SupplierDetailForm extends FormLayout {
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
                                                                   ComponentEventListener<T> listener) {
         return getEventBus().addListener(eventType, listener);
-    }
-
-    private void showErrorNotification(String errMessage) {
-        Notification notification = Notification.show(errMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        notification.setPosition(Notification.Position.TOP_CENTER);
-    }
-
-    private void showSuccessNotification(String successMessage) {
-        Notification notification = Notification.show(successMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        notification.setPosition(Notification.Position.TOP_CENTER);
     }
 }

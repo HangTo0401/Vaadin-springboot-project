@@ -14,8 +14,6 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
@@ -23,7 +21,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.LocalDateToDateConverter;
-import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -107,11 +104,11 @@ public class NewSupplierForm extends FormLayout {
             email.clear();
             phoneNumber.clear();
             address.clear();
-            showSuccessNotification("New supplier is created successfully!");
+            service.showSuccessNotification("New supplier is created successfully!");
             grid.setItems(service.getAllSuppliers(filterText));
             dialog.close();
         } else {
-            showErrorNotification("New supplier cannot be saved!");
+            service.showErrorNotification("New supplier cannot be saved!");
         }
     }
 
@@ -247,14 +244,14 @@ public class NewSupplierForm extends FormLayout {
                 fireEvent(new SaveEvent(this, supplier));
             }
         } catch (ValidationException e) {
-            showErrorNotification("Validation error count: " + e.getValidationErrors().size());
+            service.showErrorNotification("Validation error count: " + e.getValidationErrors().size());
             e.printStackTrace();
         }
     }
 
     private void addNewSupplier(Supplier supplier) {
         if (supplier == null) {
-            showErrorNotification("New supplier is invalid !");
+            service.showErrorNotification("New supplier is invalid !");
         } else {
             supplier.setId(null);
             supplier.setFirstname(firstname.getValue());
@@ -267,17 +264,5 @@ public class NewSupplierForm extends FormLayout {
             this.setVisible(true);
             addClassName("create");
         }
-    }
-
-    private void showErrorNotification(String errMessage) {
-        Notification notification = Notification.show(errMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-        notification.setPosition(Notification.Position.TOP_CENTER);
-    }
-
-    private void showSuccessNotification(String successMessage) {
-        Notification notification = Notification.show(successMessage);
-        notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-        notification.setPosition(Notification.Position.TOP_CENTER);
     }
 }
