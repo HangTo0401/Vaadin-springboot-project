@@ -10,7 +10,9 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -24,6 +26,8 @@ import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 
 import com.vaadin.flow.shared.Registration;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -51,10 +55,18 @@ public class NewProductForm extends FormLayout {
 
     private boolean isSavedSuccess = false;
 
-    public NewProductForm(MainService service, List<Product> productsList, List<Supplier> suppliersList) {
+    private String filterText;
+    private Dialog dialog;
+    private Grid<Product> grid;
+
+    public NewProductForm(Dialog dialog, Grid<Product> grid, String filterText, MainService service, List<Product> productsList, List<Supplier> suppliersList) {
+        this.dialog = dialog;
+        this.grid = grid;
+        this.filterText = filterText;
         this.service = service;
         this.productsList = productsList;
         this.suppliersList = suppliersList;
+
         addClassName("new-product-form");
         setPlaceHolder();
         createSupplierComboBox();
@@ -97,6 +109,7 @@ public class NewProductForm extends FormLayout {
     private void saveNewProduct(NewProductForm.SaveEvent saveEvent) {
         try {
             service.createProduct(saveEvent.getProduct());
+            // TODO: cacheService.updateProductCache(saveEvent.getProduct());
             isSavedSuccess = true;
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -109,8 +122,10 @@ public class NewProductForm extends FormLayout {
             price.clear();
             supplierComboBox.clear();
             showSuccessNotification("New product is created successfully!");
+            grid.setItems(service.getAllProducts(filterText));
+            dialog.close();
         } else {
-            showErrorNotification("New product cannot saved successfully!");
+            showErrorNotification("New product cannot be saved!");
         }
     }
 
@@ -148,6 +163,7 @@ public class NewProductForm extends FormLayout {
                 fireEvent(new NewProductForm.SaveEvent(this, product));
             }
         } catch (ValidationException e) {
+            showErrorNotification("Validation error count: " + e.getValidationErrors().size());
             e.printStackTrace();
         }
     }
@@ -155,32 +171,39 @@ public class NewProductForm extends FormLayout {
     private void validateForm() {
         // Firstname
         binder.forField(firstname).asRequired("Required")
-                .withValidator(firstname -> !firstname.isBlank() && !firstname.isEmpty(), "Firstname is required field!")
-                .withValidator(firstname -> firstname.length() >= 4, "Firstname must contain at least 4 characters")
-                .bind(Product::getFirstname, Product::setFirstname);
+              .withValidator(firstname -> !firstname.isBlank() && !firstname.isEmpty(), "Firstname is required field!")
+              .withValidator(firstname -> firstname.length() >= 3, "Firstname must contain at least 3 characters")
+              .withValidator(firstname -> StringUtils.isAlphaSpace(firstname), "Firstname must be a string")
+              .bind(Product::getFirstname, Product::setFirstname);
 
         // Lastname
         binder.forField(lastname).asRequired("Required")
-                .withValidator(lastname -> !lastname.isBlank() && !lastname.isEmpty(), "Lastname is required field!")
-                .withValidator(lastname -> lastname.length() >= 2, "Lastname must contain at least 2 characters")
-                .bind(Product::getLastname, Product::setLastname);
+              .withValidator(lastname -> !lastname.isBlank() && !lastname.isEmpty(), "Lastname is required field!")
+              .withValidator(lastname -> lastname.length() >= 2, "Lastname must contain at least 2 characters")
+              .withValidator(lastname -> StringUtils.isAlphaSpace(lastname), "Lastname must be a string")
+              .bind(Product::getLastname, Product::setLastname);
 
         // Quantity
         binder.forField(quantity).asRequired("Required")
-                .withValidator(quantity -> !quantity.isBlank() && !quantity.isEmpty(), "Quantity is required field!")
-                .withConverter(new StringToIntegerConverter("Must be a number"))
-                .bind(Product::getQuantity, Product::setQuantity);
+              .withValidator(quantity -> !quantity.isBlank() && !quantity.isEmpty(), "Quantity is required field!")
+              .withConverter(new StringToIntegerConverter("Must be a number"))
+              .bind(Product::getQuantity, Product::setQuantity);
 
         // Price
         binder.forField(price).asRequired("Required")
-                .withValidator(price -> !price.isBlank() && !price.isEmpty(), "Price is required field!")
-                .withValidator(
-                        price -> Double.parseDouble(price.replace(",", "")) >= 1.00F &&
-                                Double.parseDouble(price.replace(",", "")) <= 10000.00F,
-                        "Price must be between 1 and 10,000 \n with correction format: ##,###.##"
-                )
-                .withConverter(new StringToDoubleConverter("Must be a number"))
-                .bind(Product::getPrice, Product::setPrice);
+              .withValidator(price -> !price.isBlank() && !price.isEmpty(), "Price is required field!")
+              .withValidator(
+                    price -> Double.parseDouble(price.replace(",", "")) >= 1.00F &&
+                            Double.parseDouble(price.replace(",", "")) <= 100000.00F,
+                    "Price must be between 1 and 100,000 \n with format: ##,###.##"
+              )
+              .withConverter(new StringToDoubleConverter("Must be a number"))
+              .bind(Product::getPrice, Product::setPrice);
+
+        // Supplier
+        binder.forField(supplierComboBox).asRequired("Required")
+              .withValidator(supplierComboBox -> supplierComboBox.getFirstname().concat(" ").concat(supplierComboBox.getLastname()) != null && !"".equals(supplierComboBox.getFirstname().concat(" ").concat(supplierComboBox.getLastname())), "Supplier is required field!")
+              .bind(Product::getSupplier, Product::setSupplier);
     }
 
     /**
@@ -214,6 +237,7 @@ public class NewProductForm extends FormLayout {
     public class CloseEvent extends NewProductForm.NewProductFormEvent {
         CloseEvent(NewProductForm source) {
             super(source, null);
+            dialog.close();
         }
     }
 
