@@ -1,5 +1,6 @@
 package com.example.demo.views;
 
+import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 
@@ -24,6 +25,7 @@ import com.vaadin.flow.data.converter.LocalDateToDateConverter;
 import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -49,6 +51,8 @@ public class NewSupplierForm extends FormLayout {
     boolean isSavedSuccess = false;
 
     private MainService service;
+    private CacheService cacheService;
+
     private List<Product> productsList;
     private List<Supplier> suppliersList;
 
@@ -56,9 +60,10 @@ public class NewSupplierForm extends FormLayout {
     private Dialog dialog;
     private Grid<Supplier> grid;
 
-    public NewSupplierForm(Dialog dialog, Grid<Supplier> grid, String filterText, MainService service, List<Product> productsList, List<Supplier> suppliersList) {
+    public NewSupplierForm(Dialog dialog, Grid<Supplier> grid, String filterText, MainService service, CacheService cacheService, List<Product> productsList, List<Supplier> suppliersList) {
         this.dialog = dialog;
         this.service = service;
+        this.cacheService = cacheService;
         this.grid = grid;
         this.filterText = filterText;
         this.productsList = productsList;
@@ -89,9 +94,10 @@ public class NewSupplierForm extends FormLayout {
     }
 
     private void saveNewSupplier(SaveEvent saveEvent) {
+        String message = "";
         try {
-            service.createSupplier(saveEvent.getSupplier());
-            // TODO: supplierCacheService.updateSupplierCache(saveSupplier.getSupplier());
+            Supplier newSupplier = service.createSupplier(saveEvent.getSupplier());
+            message = newSupplier != null ? cacheService.reloadSupplierCache("ADD", newSupplier.getId()) : "";
             isSavedSuccess = true;
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -104,12 +110,18 @@ public class NewSupplierForm extends FormLayout {
             email.clear();
             phoneNumber.clear();
             address.clear();
-            service.showSuccessNotification("New supplier is created successfully!");
+
+            if (!message.equals("")) {
+                service.showSuccessNotification(message);
+            } else {
+                service.showErrorNotification("New supplier cannot be saved successfully!");
+            }
             grid.setItems(service.getAllSuppliersFromCache(filterText));
             dialog.close();
         } else {
             service.showErrorNotification("New supplier cannot be saved!");
         }
+
     }
 
     /**
