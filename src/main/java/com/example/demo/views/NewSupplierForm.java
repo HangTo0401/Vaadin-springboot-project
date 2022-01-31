@@ -105,7 +105,7 @@ public class NewSupplierForm extends FormLayout {
             phoneNumber.clear();
             address.clear();
             service.showSuccessNotification("New supplier is created successfully!");
-            grid.setItems(service.getAllSuppliers(filterText));
+            grid.setItems(service.getAllSuppliersFromCache(filterText));
             dialog.close();
         } else {
             service.showErrorNotification("New supplier cannot be saved!");
