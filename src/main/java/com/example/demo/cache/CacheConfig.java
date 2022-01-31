@@ -1,59 +1,174 @@
 package com.example.demo.cache;
 
-import net.sf.ehcache.config.CacheConfiguration;
+import com.example.demo.entity.Supplier;
+import com.example.demo.repository.SupplierRepository;
+
+import lombok.Getter;
+
+import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
-import org.springframework.cache.annotation.CachingConfigurerSupport;
+import net.sf.ehcache.Element;
+import net.sf.ehcache.search.Query;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.ehcache.EhCacheCacheManager;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @EnableCaching //annotation enables the Spring Boot caching abstraction layer in our application.
 @Configuration //annotation marks the CacheConfig class as a Spring configuration class.
-public class CacheConfig extends CachingConfigurerSupport {
+public class CacheConfig {
+    private final Logger log = LoggerFactory.getLogger(CacheConfig.class);
 
-//    @Autowired
-//    private static CacheManager cacheManager;
+    @Getter
+    private CacheManager cacheManager;
 
-    public static void initCacheManager() {
-//        net.sf.ehcache.CacheManager.setCacheNames(Arrays.asList("supplierCache", "productCache"));
-//        cacheManager.addCache(new Cache("castickets", 500, false, false, 30, 30));
+    private Cache supplierCache;
+
+    private SupplierRepository supplierRepository;
+
+    private List<Supplier> supplierList = new ArrayList<>();
+
+    public CacheConfig(SupplierRepository supplierRepository) {
+        super();
+        this.supplierRepository = supplierRepository;
+        init();
     }
 
-    @Bean
-    public CacheManager ehCacheManager() {
-        CacheConfiguration supplierCache = new CacheConfiguration();
-        supplierCache.setName("supplierCache");
-        supplierCache.setMemoryStoreEvictionPolicy("LRU");
-        supplierCache.setOverflowToOffHeap(false);
-        supplierCache.setMaxEntriesLocalHeap(1000);
-        supplierCache.setTimeToLiveSeconds(10);
-        supplierCache.setTimeToIdleSeconds(10);
+    private void init() {
+        // Get config from ehcache.xml
+        cacheManager = CacheManager.newInstance(getClass().getResource("/ehcache.xml"));
+        CacheManager.create();
 
-        CacheConfiguration productCache = new CacheConfiguration();
-        productCache.setName("productCache");
-        productCache.setMemoryStoreEvictionPolicy("LRU");
-        productCache.setOverflowToOffHeap(false);
-        productCache.setMaxEntriesLocalHeap(1000);
-        productCache.setTimeToLiveSeconds(10);
-        productCache.setTimeToIdleSeconds(10);
+        supplierCache = cacheManager.getCache(CacheName.SUPPLIER_CACHE);
 
-        net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
-        config.addCache(supplierCache);
-        config.addCache(productCache);
-        return net.sf.ehcache.CacheManager.newInstance(config);
+        List<Supplier> supplierList = supplierRepository.findAll();
+
+        // Add suppliers to cache
+        addAllSuppliersToCache(supplierList);
     }
 
-    @Bean
-    @Override
-    public EhCacheCacheManager cacheManager() {
-        return new EhCacheCacheManager(ehCacheManager());
+    public void addAllSuppliersToCache(List<Supplier> supplierList) {
+        log.info("Add all suppliers to cache");
+        try {
+            for (Supplier supplier : supplierList) {
+                log.info("Element: " + new Element(supplier.getId(), supplier));
+                supplierCache.put(new Element(supplier.getId(), supplier));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
-//    private void init() {
-//        cacheManager = CacheManager.newInstance("src/main/resources/ehcache.xml");
-//        CacheManager.create();
-//    }
+    public List<Supplier> getAllSuppliersFromCache() {
+        log.info("Get all suppliers from cache");
+        try {
+            Query supplierQuery = supplierCache.createQuery();
+
+            // Get list supplier from cache
+            supplierList = supplierQuery.includeValues()
+                    .execute().all()
+                    .stream().map(result -> (Supplier) result.getValue()).collect(Collectors.toList());
+            supplierList.forEach(System.out::println);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return supplierList;
+    }
+
+    // Search by id from cache
+    public Supplier getSupplierByIdFromCache(Long id) {
+        log.info("Get supplier from cache");
+        Element element = null;
+
+        try {
+            element = supplierCache.get(id);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return element != null ? (Supplier) element.getObjectValue() : null;
+    }
+
+    public String reloadCache(String action, Long id) {
+        String responseMessage = "";
+
+        try {
+            // Get record from db
+            Supplier supplier = supplierRepository.findById(id).orElseThrow(() -> new RuntimeException("Supplier not found"));
+
+            if (action.equals("ADD")) {
+                // Add new record to cache
+                responseMessage = addNewSupplierToCache(supplier);
+            } else if (action.equals("UPDATE")) {
+                // Update record to cache
+                responseMessage = updateSupplierInCache(supplier.getId());
+            } else if (action.equals("DELETE")) {
+                // Delete record to cache
+                responseMessage = deleteSupplierInCache(supplier.getId());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return responseMessage;
+    }
+
+    public String addNewSupplierToCache(Supplier supplier) {
+        log.info("Add new supplier in cache:");
+        String message = "";
+        try {
+            if (supplier != null) {
+                log.info("New element: " + new Element(supplier.getId(), supplier));
+                supplierCache.put(new Element(supplier.getId(), supplier));
+            } else {
+                log.info("New supplier is invalid!");
+                message = "New supplier is invalid!";
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return message;
+    }
+
+    public String updateSupplierInCache(Long updateId) {
+        log.info("Update supplier in cache:");
+        String message = "";
+
+        try {
+            if (updateId != null) {
+                Supplier existSupplier = (Supplier) supplierList.stream().filter(supplier -> supplier.getId() == updateId);
+                log.info("Exist element: " + new Element(existSupplier.getId(), existSupplier));
+                supplierCache.put(new Element(existSupplier.getId(), existSupplier));
+            } else {
+                log.info("Supplier is invalid!");
+                message = "Supplier is invalid!";
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return message;
+    }
+
+    public String deleteSupplierInCache(Long deleteId) {
+        log.info("Delete supplier in cache:");
+        String message = "";
+
+        try {
+            if (deleteId != null) {
+                Supplier existSupplier = (Supplier) supplierList.stream().filter(supplier -> supplier.getId() == deleteId);
+                log.info("Delete element: " + new Element(existSupplier.getId(), existSupplier));
+                supplierCache.remove(new Element(existSupplier.getId(), existSupplier));
+            } else {
+                log.info("Delete supplier is invalid!");
+                message = "Delete supplier is invalid!";
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return message;
+    }
 }
