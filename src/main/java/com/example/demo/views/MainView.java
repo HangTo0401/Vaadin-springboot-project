@@ -1,5 +1,6 @@
 package com.example.demo.views;
 
+import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 import com.example.demo.repository.ProductRepository;
@@ -60,6 +61,8 @@ public class MainView extends VerticalLayout {
     private Dialog productDetailDialog;
 
     private final MainService service;
+    private final CacheService cacheService;
+
     private final SupplierRepository supplierRepository;
     private final ProductRepository productRepository;
 
@@ -75,8 +78,9 @@ public class MainView extends VerticalLayout {
     private SupplierDetailForm supplierDetailForm;
     private ProductDetailForm productDetailForm;
 
-    public MainView(MainService service, SupplierRepository supplierRepository, ProductRepository productRepository) {
+    public MainView(MainService service, CacheService cacheService, SupplierRepository supplierRepository, ProductRepository productRepository) {
         this.service = service;
+        this.cacheService = cacheService;
         this.supplierRepository = supplierRepository;
         this.productRepository = productRepository;
         addClassName("main-view");
@@ -133,9 +137,11 @@ public class MainView extends VerticalLayout {
                                                   supplierGrid,
                                                   supplierFilterText.getValue(),
                                                   service,
+                                                  cacheService,
                                                   service.getAllProducts(""),
                                                   service.getAllSuppliersFromCache(""));
             newSupplierForm.setWidth("25em");
+            newSupplierForm.setId("new-supplier-form");
             newSupplierDialog.add(newSupplierForm);
             newSupplierDialog.open();
         });
