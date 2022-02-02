@@ -207,9 +207,9 @@ public class CacheConfig {
         String message = "";
         try {
             if (supplier != null) {
-                log.info("New element: " + new Element(supplier.getId(), supplier));
+                log.info("New supplier: " + new Element(supplier.getId(), supplier));
                 supplierCache.put(new Element(supplier.getId(), supplier));
-                message = "New supplier saved to cache successfully!";
+                message = "New supplier is added to cache successfully!";
             } else {
                 log.info("New supplier is invalid!");
                 message = "New supplier is invalid!";
@@ -233,7 +233,7 @@ public class CacheConfig {
                 Supplier existSupplier = (Supplier) supplierList.stream().filter(supplier -> supplier.getId() == updateId);
                 log.info("Exist element: " + new Element(existSupplier.getId(), existSupplier));
                 supplierCache.put(new Element(existSupplier.getId(), existSupplier));
-                message = "Exist supplier updated in cache successfully!";
+                message = "Exist supplier is updated in cache successfully!";
             } else {
                 log.info("Supplier is invalid!");
                 message = "Supplier is invalid!";
@@ -257,7 +257,7 @@ public class CacheConfig {
                 Supplier existSupplier = (Supplier) supplierList.stream().filter(supplier -> supplier.getId() == deleteId);
                 log.info("Delete element: " + new Element(existSupplier.getId(), existSupplier));
                 supplierCache.remove(new Element(existSupplier.getId(), existSupplier));
-                message = "Supplier deleted in cache successfully!";
+                message = "Supplier is deleted in cache successfully!";
             } else {
                 log.info("Delete supplier is invalid!");
                 message = "Delete supplier is invalid!";
@@ -307,8 +307,9 @@ public class CacheConfig {
 
         try {
             if (product != null) {
-                log.info("New element: " + new Element(product.getId(), product));
+                log.info("New product: " + new Element(product.getId(), product));
                 supplierCache.put(new Element(product.getId(), product));
+                message = "New product is added to cache successfully!";
             } else {
                 log.info("New product is invalid!");
                 message = "New product is invalid!";
@@ -332,6 +333,7 @@ public class CacheConfig {
                 Product existProduct = (Product) productList.stream().filter(product -> product.getId() == updateId);
                 log.info("Exist element: " + new Element(existProduct.getId(), existProduct));
                 supplierCache.put(new Element(existProduct.getId(), existProduct));
+                message = "Exist supplier is updated in cache successfully!";
             } else {
                 log.info("Product is invalid!");
                 message = "Product is invalid!";
@@ -355,6 +357,7 @@ public class CacheConfig {
                 Product existProduct = (Product) productList.stream().filter(product -> product.getId() == deleteId);
                 log.info("Delete element: " + new Element(existProduct.getId(), existProduct));
                 supplierCache.remove(new Element(existProduct.getId(), existProduct));
+                message = "Product is deleted in cache successfully!";
             } else {
                 log.info("Delete product is invalid!");
                 message = "Delete product is invalid!";
