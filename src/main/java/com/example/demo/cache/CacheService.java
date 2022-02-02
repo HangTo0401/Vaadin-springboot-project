@@ -1,20 +1,16 @@
 package com.example.demo.cache;
 
+import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
-import net.sf.ehcache.search.Attribute;
-import net.sf.ehcache.search.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class CacheService {
@@ -41,12 +37,6 @@ public class CacheService {
 //                    .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
         cacheManager.clearAll();
     }
-//
-//    public void addProductToCache(Product product) {
-//        Cache cache = cacheManager.getCache("productCache");
-//        cache.putIfAbsent(product.getId(), product);
-//    }
-//
 
     public List<Supplier> getAllSuppliersFromCache() {
         List<Supplier> supplierList = cacheConfig.getAllSuppliersFromCache();
@@ -62,6 +52,17 @@ public class CacheService {
     public String reloadSupplierCache(String action, Long id) {
         String message = cacheConfig.reloadSupplierCache(action, id);
         return message;
+    }
+
+    public List<Product> getAllProductsFromCache() {
+        List<Product> productList = cacheConfig.getAllProductsFromCache();
+        return productList;
+    }
+
+    public Product getProductByKeyFromCache(Long id) {
+        Cache productCache = cacheManager.getCache(CacheName.PRODUCT_CACHE);
+        Element element = productCache.get(id);
+        return element != null ? (Product) element.getObjectValue() : null;
     }
 
     public String reloadProductCache(String action, Long id) {
