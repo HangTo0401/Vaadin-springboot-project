@@ -1,5 +1,6 @@
 package com.example.demo.views;
 
+import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 import com.example.demo.service.MainService;
@@ -48,6 +49,8 @@ public class NewProductForm extends FormLayout {
     Button cancel = new Button("Cancel");
 
     private MainService service;
+    private CacheService cacheService;
+
     private List<Product> productsList;
     private List<Supplier> suppliersList;
 
@@ -57,11 +60,12 @@ public class NewProductForm extends FormLayout {
     private Dialog dialog;
     private Grid<Product> grid;
 
-    public NewProductForm(Dialog dialog, Grid<Product> grid, String filterText, MainService service, List<Product> productsList, List<Supplier> suppliersList) {
+    public NewProductForm(Dialog dialog, Grid<Product> grid, String filterText, MainService service, CacheService cacheService, List<Product> productsList, List<Supplier> suppliersList) {
         this.dialog = dialog;
         this.grid = grid;
         this.filterText = filterText;
         this.service = service;
+        this.cacheService = cacheService;
         this.productsList = productsList;
         this.suppliersList = suppliersList;
 
@@ -105,9 +109,11 @@ public class NewProductForm extends FormLayout {
     }
 
     private void saveNewProduct(NewProductForm.SaveEvent saveEvent) {
+        String message = "";
+
         try {
-            service.createProduct(saveEvent.getProduct());
-            // TODO: cacheService.updateProductCache(saveEvent.getProduct());
+            Product newProduct = service.createProduct(saveEvent.getProduct());
+            message = newProduct != null ? cacheService.reloadProductCache("ADD", newProduct.getId()) : "";
             isSavedSuccess = true;
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -119,8 +125,13 @@ public class NewProductForm extends FormLayout {
             quantity.clear();
             price.clear();
             supplierComboBox.clear();
-            service.showSuccessNotification("New product is created successfully!");
-            grid.setItems(service.getAllProducts(filterText));
+
+            if (!message.equals("")) {
+                service.showSuccessNotification(message);
+            } else {
+                service.showErrorNotification("New supplier cannot be saved successfully!");
+            }
+            grid.setItems(service.getAllProductsFromCache(filterText));
             dialog.close();
         } else {
             service.showErrorNotification("New product cannot be saved!");
