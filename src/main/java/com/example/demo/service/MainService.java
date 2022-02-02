@@ -13,10 +13,9 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,25 +30,37 @@ public class MainService {
     @Autowired
     private CacheService cacheService;
 
-    @Autowired
-    private ModelMapper modelMapper;
-
     private static Logger log = LoggerFactory.getLogger(MainService.class);
 
+    /**
+     * Get all suppliers from cache
+     * @param stringFilter
+     * */
     public List<Supplier> getAllSuppliersFromCache(String stringFilter) {
         log.info("Find all suppliers and put in cache");
-        if (stringFilter == null || stringFilter.isEmpty()) {
-            log.info("Load data from cache " + CacheName.SUPPLIER_CACHE);
-            List<Supplier> suppliers = cacheService.getAllSuppliersFromCache();
-            return suppliers;
-        } else {
-            List<Supplier> supplierList = supplierRepository.search(stringFilter);
-            return supplierList;
+        List<Supplier> supplierList = new ArrayList<>();
+
+        try {
+            if (stringFilter == null || stringFilter.isEmpty()) {
+                log.info("Load data from cache " + CacheName.SUPPLIER_CACHE);
+                supplierList = cacheService.getAllSuppliersFromCache();
+            } else {
+                supplierList = supplierRepository.search(stringFilter);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("Could not create supplier");
         }
+        return supplierList;
     }
 
+    /**
+     * Create supplier
+     * @param supplier
+     * */
     public Supplier createSupplier(Supplier supplier) {
         Supplier newSupplier = null;
+
         try {
             if (supplier == null) {
                 System.err.println("Supplier is null!");
@@ -58,10 +69,15 @@ public class MainService {
             newSupplier = supplierRepository.save(supplier);
         } catch (Exception ex) {
             ex.printStackTrace();
+            log.error("Could not create supplier");
         }
         return newSupplier;
     }
 
+    /**
+     * Get supplier by id
+     * @param id
+     * */
     public Supplier getSupplierById(Long id) {
         Supplier supplier = new Supplier();
 
@@ -80,48 +96,99 @@ public class MainService {
         return supplier;
     }
 
+    /**
+     * Delete supplier
+     * @param supplier
+     * */
     public void deleteSupplier(Supplier supplier) {
-        supplierRepository.delete(supplier);
+        try {
+            supplierRepository.delete(supplier);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("Could not delete supplier with id: " + supplier.getId());
+        }
     }
 
+    /**
+     * Delete supplier by id
+     * @param id
+     * */
     public boolean deleteSupplierById(Long id) {
         boolean isFound = false;
+
         try {
             supplierRepository.deleteById(id);
             isFound = supplierRepository.existsById(id);
         } catch (Exception ex) {
             ex.printStackTrace();
+            log.error("Could not delete supplier with id: " + id);
         }
         return isFound;
     }
 
+    /**
+     * Update supplier
+     * @param supplier
+     * */
     public Supplier updateSupplier(Supplier supplier) {
-        if (supplier == null) {
-            System.err.println("Supplier is null!");
-            return null;
+        Supplier updateSupplier = null;
+        try {
+            if (supplier == null) {
+                System.err.println("Supplier is null!");
+                return null;
+            }
+            updateSupplier = supplierRepository.save(supplier);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        return supplierRepository.save(supplier);
+        return updateSupplier;
     }
 
-    public List<Product> getAllProducts(String stringFilter) {
-        log.info("findAll products list");
-        if (stringFilter == null || stringFilter.isEmpty()) {
-            List<Product> productList = productRepository.findAll();
-            return productList;
-        } else {
-            List<Product> productList = productRepository.search(stringFilter);
-            return productList;
+    /**
+     * Get all products
+     * @param stringFilter
+     * */
+    public List<Product> getAllProductsFromCache(String stringFilter) {
+        log.info("Find all products and put in cache");
+        List<Product> productList = new ArrayList<>();
+
+        try {
+            if (stringFilter == null || stringFilter.isEmpty()) {
+                log.info("Load data from cache " + CacheName.PRODUCT_CACHE);
+                productList = cacheService.getAllProductsFromCache();
+                return productList;
+            } else {
+                productList = productRepository.search(stringFilter);
+                return productList;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+        return productList;
     }
 
-    public Product createProduct(@RequestBody Product product) {
-        if (product == null) {
-            System.err.println("Product is null!");
-            return null;
+    /**
+     * Create product
+     * @param product
+     * */
+    public Product createProduct(Product product) {
+        Product newProduct = null;
+        try {
+            if (product == null) {
+                System.err.println("Product is null!");
+                return null;
+            }
+            newProduct = productRepository.save(product);
+        } catch(Exception ex) {
+            ex.printStackTrace();
         }
-        return productRepository.save(product);
+        return newProduct;
     }
 
+    /**
+     * Get product by id
+     * @param productId
+     * */
     public Product getProductById(Long productId) {
         Optional<Product> optionalProduct = productRepository.findById(productId);
         if (optionalProduct.isPresent()) {
@@ -130,10 +197,18 @@ public class MainService {
         return null;
     }
 
+    /**
+     * Delete product
+     * @param product
+     * */
     public void deleteProduct(Product product) {
         productRepository.delete(product);
     }
 
+    /**
+     * Delete product by id
+     * @param id
+     * */
     public boolean deleteProductById(Long id) {
         boolean isFound = false;
         try {
@@ -145,6 +220,10 @@ public class MainService {
         return isFound;
     }
 
+    /**
+     * Update product
+     * @param product
+     * */
     public Product updateProduct(Product product) {
         if (product == null) {
             System.err.println("Product is null!");
@@ -153,12 +232,20 @@ public class MainService {
         return productRepository.save(product);
     }
 
+    /**
+     * Show error notification
+     * @param errMessage
+     * */
     public void showErrorNotification(String errMessage) {
         Notification notification = Notification.show(errMessage);
         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         notification.setPosition(Notification.Position.TOP_CENTER);
     }
 
+    /**
+     * Show success notification
+     * @param successMessage
+     * */
     public void showSuccessNotification(String successMessage) {
         Notification notification = Notification.show(successMessage);
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
