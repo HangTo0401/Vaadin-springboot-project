@@ -160,6 +160,7 @@ public class MainView extends VerticalLayout {
                                                 productGrid,
                                                 productFilterText.getValue(),
                                                 service,
+                                                cacheService,
                                                 service.getAllProductsFromCache(""),
                                                 service.getAllSuppliersFromCache(""));
             newProductForm.setWidth("25em");
