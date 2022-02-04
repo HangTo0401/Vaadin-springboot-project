@@ -69,7 +69,7 @@ public class MainService {
             newSupplier = supplierRepository.save(supplier);
         } catch (Exception ex) {
             ex.printStackTrace();
-            log.error("Could not create supplier");
+            log.error("Could not create new supplier");
         }
         return newSupplier;
     }
@@ -132,6 +132,7 @@ public class MainService {
      * */
     public Supplier updateSupplier(Supplier supplier) {
         Supplier updateSupplier = null;
+
         try {
             if (supplier == null) {
                 System.err.println("Supplier is null!");
@@ -140,6 +141,7 @@ public class MainService {
             updateSupplier = supplierRepository.save(supplier);
         } catch (Exception ex) {
             ex.printStackTrace();
+            log.error("Could not update supplier with id: " + supplier.getId());
         }
         return updateSupplier;
     }
