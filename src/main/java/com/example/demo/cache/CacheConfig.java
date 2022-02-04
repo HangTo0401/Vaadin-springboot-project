@@ -111,7 +111,7 @@ public class CacheConfig {
             supplierList = supplierCacheQuery.includeValues()
                                              .execute().all()
                                              .stream().map(result -> (Supplier) result.getValue()).collect(Collectors.toList());
-            supplierList.forEach(System.out::println);
+            supplierList.stream().forEach(System.out::println);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -205,6 +205,7 @@ public class CacheConfig {
     public String addNewSupplierToCache(Supplier supplier) {
         log.info("Add new supplier in cache:");
         String message = "";
+
         try {
             if (supplier != null) {
                 log.info("New supplier: " + new Element(supplier.getId(), supplier));
@@ -225,18 +226,21 @@ public class CacheConfig {
      * @param updateId
      * */
     public String updateSupplierInCache(Long updateId) {
-        log.info("Update supplier in cache:");
+        log.info("Update supplier in cache with id: " + updateId);
         String message = "";
 
         try {
             if (updateId != null) {
-                Supplier existSupplier = (Supplier) supplierList.stream().filter(supplier -> supplier.getId() == updateId);
-                log.info("Exist element: " + new Element(existSupplier.getId(), existSupplier));
+                Supplier existSupplier = (Supplier) supplierList.stream()
+                                                                .filter(supplier -> supplier.getId() == updateId)
+                                                                .findAny() // If 'findAny' then return found
+                                                                .orElse(null); // If not found, return null
+                log.info("Exist supplier: " + new Element(existSupplier.getId(), existSupplier));
                 supplierCache.put(new Element(existSupplier.getId(), existSupplier));
                 message = "Exist supplier is updated in cache successfully!";
             } else {
-                log.info("Supplier is invalid!");
-                message = "Supplier is invalid!";
+                log.info("Exist supplier which is updated is invalid!");
+                message = "Exist supplier which is updated is invalid!";
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -259,8 +263,8 @@ public class CacheConfig {
                 supplierCache.remove(new Element(existSupplier.getId(), existSupplier));
                 message = "Supplier is deleted in cache successfully!";
             } else {
-                log.info("Delete supplier is invalid!");
-                message = "Delete supplier is invalid!";
+                log.info("Exist supplier which is deleted is invalid!");
+                message = "Exist supplier which is deleted is invalid";
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -325,18 +329,18 @@ public class CacheConfig {
      * @param updateId
      * */
     public String updateProductInCache(Long updateId) {
-        log.info("Update product in cache:");
+        log.info("Update product in cache with id: " + updateId);
         String message = "";
 
         try {
             if (updateId != null) {
                 Product existProduct = (Product) productList.stream().filter(product -> product.getId() == updateId);
-                log.info("Exist element: " + new Element(existProduct.getId(), existProduct));
+                log.info("Exist product: " + new Element(existProduct.getId(), existProduct));
                 supplierCache.put(new Element(existProduct.getId(), existProduct));
-                message = "Exist supplier is updated in cache successfully!";
+                message = "Exist product is updated in cache successfully!";
             } else {
-                log.info("Product is invalid!");
-                message = "Product is invalid!";
+                log.info("Exist product which is updated is invalid!");
+                message = "Exist product which is updated is invalid!";
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -349,7 +353,7 @@ public class CacheConfig {
      * @param deleteId
      * */
     public String deleteProductInCache(Long deleteId) {
-        log.info("Delete product in cache:");
+        log.info("Delete product in cache with id: " + deleteId);
         String message = "";
 
         try {
