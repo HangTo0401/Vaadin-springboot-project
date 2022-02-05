@@ -33,6 +33,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class NewProductForm extends FormLayout {
+    private MainService service;
+
+    private CacheService cacheService;
+
+    private List<Product> productsList;
+
+    private List<Supplier> suppliersList;
+
+    private String filterText;
+
+    private Dialog dialog;
+
+    private Grid<Product> grid;
+
+    private Product product;
+
+    private boolean isSavedSuccess = false;
+
     // Other fields omitted
     Binder<Product> binder = new BeanValidationBinder<>(Product.class);
 
@@ -47,18 +65,6 @@ public class NewProductForm extends FormLayout {
 
     Button save = new Button("Save");
     Button cancel = new Button("Cancel");
-
-    private MainService service;
-    private CacheService cacheService;
-
-    private List<Product> productsList;
-    private List<Supplier> suppliersList;
-
-    private boolean isSavedSuccess = false;
-
-    private String filterText;
-    private Dialog dialog;
-    private Grid<Product> grid;
 
     public NewProductForm(Dialog dialog,
                           Grid<Product> grid,
@@ -91,8 +97,6 @@ public class NewProductForm extends FormLayout {
             createButtonsLayout());
     }
 
-    private Product product;
-
     // other methods and fields omitted
     public void setProduct(Product product) {
         this.product = product;
@@ -119,7 +123,7 @@ public class NewProductForm extends FormLayout {
 
         try {
             Product newProduct = service.createProduct(saveEvent.getProduct());
-            message = newProduct != null ? cacheService.reloadProductCache("ADD", newProduct.getId()) : "";
+            message = newProduct != null ? cacheService.reloadProductCache("ADD", newProduct) : "";
             isSavedSuccess = true;
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -158,7 +162,7 @@ public class NewProductForm extends FormLayout {
         cancel.addClickListener(e -> fireEvent(new NewProductForm.CloseEvent(this)));
 
         binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
-        
+
         return new HorizontalLayout(save, cancel);
     }
 

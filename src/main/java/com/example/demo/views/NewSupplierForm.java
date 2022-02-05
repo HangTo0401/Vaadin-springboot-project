@@ -35,6 +35,24 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class NewSupplierForm extends FormLayout {
+    private MainService service;
+
+    private CacheService cacheService;
+
+    private List<Product> productsList;
+
+    private List<Supplier> suppliersList;
+
+    private String filterText;
+
+    private Dialog dialog;
+
+    private Grid<Supplier> grid;
+
+    private Supplier supplier;
+
+    private boolean isSavedSuccess = false;
+
     H2 headline = new H2("Supplier");
 
     TextField firstname = new TextField("First name");
@@ -47,19 +65,7 @@ public class NewSupplierForm extends FormLayout {
     Button save = new Button("Save");
     Button cancel = new Button("Cancel");
 
-    private Supplier supplier;
     Binder<Supplier> binder = new BeanValidationBinder<>(Supplier.class);
-    boolean isSavedSuccess = false;
-
-    private MainService service;
-    private CacheService cacheService;
-
-    private List<Product> productsList;
-    private List<Supplier> suppliersList;
-
-    private String filterText;
-    private Dialog dialog;
-    private Grid<Supplier> grid;
 
     public NewSupplierForm(Dialog dialog,
                            Grid<Supplier> grid,
@@ -105,7 +111,7 @@ public class NewSupplierForm extends FormLayout {
 
         try {
             Supplier newSupplier = service.createSupplier(saveEvent.getSupplier());
-            message = newSupplier != null ? cacheService.reloadSupplierCache("ADD", newSupplier.getId()) : "";
+            message = newSupplier != null ? cacheService.reloadSupplierCache("ADD", newSupplier) : "";
             isSavedSuccess = true;
         } catch (Exception exception) {
             exception.printStackTrace();
