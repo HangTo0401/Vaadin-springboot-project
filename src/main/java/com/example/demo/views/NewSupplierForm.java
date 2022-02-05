@@ -22,6 +22,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.LocalDateToDateConverter;
+import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -62,10 +63,10 @@ public class NewSupplierForm extends FormLayout {
 
     public NewSupplierForm(Dialog dialog, Grid<Supplier> grid, String filterText, MainService service, CacheService cacheService, List<Product> productsList, List<Supplier> suppliersList) {
         this.dialog = dialog;
-        this.service = service;
-        this.cacheService = cacheService;
         this.grid = grid;
         this.filterText = filterText;
+        this.service = service;
+        this.cacheService = cacheService;
         this.productsList = productsList;
         this.suppliersList = suppliersList;
 
@@ -95,6 +96,7 @@ public class NewSupplierForm extends FormLayout {
 
     private void saveNewSupplier(SaveEvent saveEvent) {
         String message = "";
+
         try {
             Supplier newSupplier = service.createSupplier(saveEvent.getSupplier());
             message = newSupplier != null ? cacheService.reloadSupplierCache("ADD", newSupplier.getId()) : "";
@@ -121,7 +123,6 @@ public class NewSupplierForm extends FormLayout {
         } else {
             service.showErrorNotification("New supplier cannot be saved!");
         }
-
     }
 
     /**
@@ -237,6 +238,7 @@ public class NewSupplierForm extends FormLayout {
         // Phone number
         binder.forField(phoneNumber).asRequired("Required")
               .withValidator(phoneNumber -> !phoneNumber.isBlank() && !phoneNumber.isEmpty(), "Phone number is required field!")
+              .withValidator(new RegexpValidator("Phone number is invalid!", "84|0[3|5|7|8|9])+([0-9]{8}"))
               .bind(Supplier::getPhoneNumber, Supplier::setPhoneNumber);
 
         // Email
