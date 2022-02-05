@@ -84,7 +84,6 @@ public class MainView extends VerticalLayout {
         this.supplierRepository = supplierRepository;
         this.productRepository = productRepository;
         addClassName("main-view");
-        configureForms();
         setupLayout(DEFAULT_LAYOUT);
 
         // Event listener for supplierDetailForm
@@ -100,7 +99,12 @@ public class MainView extends VerticalLayout {
     }
 
     private void configureForms() {
-        supplierDetailForm = new SupplierDetailForm(service, service.getAllProductsFromCache(""), service.getAllSuppliersFromCache(""));
+        supplierDetailForm = new SupplierDetailForm(supplierDetailDialog,
+                                                    supplierGrid,
+                                                    service,
+                                                    cacheService,
+                                                    service.getAllProductsFromCache(""),
+                                                    service.getAllSuppliersFromCache(""));
         supplierDetailForm.setWidth("25em");
 
         productDetailForm = new ProductDetailForm(service, service.getAllProductsFromCache(""), service.getAllSuppliersFromCache(""));
@@ -177,13 +181,12 @@ public class MainView extends VerticalLayout {
      * Update Supplier
      */
     private void updateSupplier(SupplierDetailForm.SaveEvent event) {
-        Supplier updateSupplier = event.getSupplier();
-        service.updateSupplier(updateSupplier);
-        listSupplierDataProvider.refreshItem(updateSupplier);
-        supplierGrid.getDataProvider().refreshItem(updateSupplier);
-//        supplierDetailForm.setVisible(false);
-        closeSupplierDetailDialog();
-        updateSupplierList();
+//        Supplier updateSupplier = event.getSupplier();
+//        service.updateSupplier(updateSupplier);
+//        listSupplierDataProvider.refreshItem(updateSupplier);
+//        supplierGrid.getDataProvider().refreshItem(updateSupplier);
+//        closeSupplierDetailDialog();
+//        updateSupplierList();
     }
 
     /**
@@ -317,6 +320,11 @@ public class MainView extends VerticalLayout {
         supplierDetailDialog = new Dialog();
         productDetailDialog = new Dialog();
 
+        supplierGrid = new Grid<>(Supplier.class, false);
+        productGrid = new Grid<>(Product.class, false);
+
+        configureForms();
+
         supplierDetailDialog.add(supplierDetailForm);
         productDetailDialog.add(productDetailForm);
 
@@ -342,7 +350,6 @@ public class MainView extends VerticalLayout {
     }
 
     private void initSupplierGrid() {
-        supplierGrid = new Grid<>(Supplier.class, false);
         supplierGrid.addClassNames("supplier-grid");
 
         listSuppliers = service.getAllSuppliersFromCache("");
@@ -386,7 +393,7 @@ public class MainView extends VerticalLayout {
     }
 
     private void initProductGrid() {
-        productGrid = new Grid<>(Product.class, false);
+        productGrid.addClassNames("product-grid");
 
         listProducts = service.getAllProductsFromCache("");
         listProductDataProvider = DataProvider.ofCollection(listProducts);
