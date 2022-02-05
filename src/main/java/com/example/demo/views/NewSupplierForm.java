@@ -61,7 +61,13 @@ public class NewSupplierForm extends FormLayout {
     private Dialog dialog;
     private Grid<Supplier> grid;
 
-    public NewSupplierForm(Dialog dialog, Grid<Supplier> grid, String filterText, MainService service, CacheService cacheService, List<Product> productsList, List<Supplier> suppliersList) {
+    public NewSupplierForm(Dialog dialog,
+                           Grid<Supplier> grid,
+                           String filterText,
+                           MainService service,
+                           CacheService cacheService,
+                           List<Product> productsList,
+                           List<Supplier> suppliersList) {
         this.dialog = dialog;
         this.grid = grid;
         this.filterText = filterText;
@@ -118,8 +124,9 @@ public class NewSupplierForm extends FormLayout {
             } else {
                 service.showErrorNotification("New supplier cannot be saved successfully!");
             }
-            grid.setItems(service.getAllSuppliersFromCache(filterText));
-            dialog.close();
+
+            updateSupplierGrid();
+            fireEvent(new CloseEvent(this));
         } else {
             service.showErrorNotification("New supplier cannot be saved!");
         }
@@ -278,5 +285,12 @@ public class NewSupplierForm extends FormLayout {
             this.setVisible(true);
             addClassName("create");
         }
+    }
+
+    /**
+     * Update Supplier grid
+     */
+    private void updateSupplierGrid() {
+        grid.setItems(service.getAllSuppliersFromCache(filterText));
     }
 }

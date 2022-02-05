@@ -60,7 +60,13 @@ public class NewProductForm extends FormLayout {
     private Dialog dialog;
     private Grid<Product> grid;
 
-    public NewProductForm(Dialog dialog, Grid<Product> grid, String filterText, MainService service, CacheService cacheService, List<Product> productsList, List<Supplier> suppliersList) {
+    public NewProductForm(Dialog dialog,
+                          Grid<Product> grid,
+                          String filterText,
+                          MainService service,
+                          CacheService cacheService,
+                          List<Product> productsList,
+                          List<Supplier> suppliersList) {
         this.dialog = dialog;
         this.grid = grid;
         this.filterText = filterText;
@@ -131,8 +137,9 @@ public class NewProductForm extends FormLayout {
             } else {
                 service.showErrorNotification("New supplier cannot be saved successfully!");
             }
-            grid.setItems(service.getAllProductsFromCache(filterText));
-            dialog.close();
+
+            updateProductGrid();
+            fireEvent(new NewProductForm.CloseEvent(this));
         } else {
             service.showErrorNotification("New product cannot be saved!");
         }
@@ -151,7 +158,6 @@ public class NewProductForm extends FormLayout {
         cancel.addClickListener(e -> fireEvent(new NewProductForm.CloseEvent(this)));
 
         binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
-
         return new HorizontalLayout(save, cancel);
     }
 
@@ -273,5 +279,12 @@ public class NewProductForm extends FormLayout {
             this.setVisible(true);
             addClassName("create");
         }
+    }
+
+    /**
+     * Update Product grid
+     */
+    private void updateProductGrid() {
+        grid.setItems(service.getAllProductsFromCache(filterText));
     }
 }
