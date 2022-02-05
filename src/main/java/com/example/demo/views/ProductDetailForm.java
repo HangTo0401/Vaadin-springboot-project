@@ -1,5 +1,6 @@
 package com.example.demo.views;
 
+import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 import com.example.demo.service.MainService;
@@ -9,7 +10,9 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -40,14 +43,27 @@ public class ProductDetailForm extends FormLayout {
     Button cancel = new Button("Cancel");
 
     private MainService service;
+    private CacheService cacheService;
+
     private List<Product> productsList;
     private List<Supplier> suppliersList;
+
+    private Dialog dialog;
+    private Grid<Product> grid;
 
     private Product product;
     private boolean isUpdatedSuccess = false;
 
-    public ProductDetailForm(MainService service, List<Product> productsList, List<Supplier> suppliersList) {
+    public ProductDetailForm(Dialog dialog,
+                             Grid<Product> grid,
+                             MainService service,
+                             CacheService cacheService,
+                             List<Product> productsList,
+                             List<Supplier> suppliersList) {
+        this.dialog = dialog;
+        this.grid = grid;
         this.service = service;
+        this.cacheService = cacheService;
         this.productsList = productsList;
         this.suppliersList = suppliersList;
         addClassName("product-detail-form");
@@ -77,9 +93,15 @@ public class ProductDetailForm extends FormLayout {
         }
     }
 
+    /**
+     * Update product detail
+     */
     private void updateProduct(ProductDetailForm.SaveEvent saveEvent) {
+        String message = "";
+
         try {
-            service.updateProduct(saveEvent.getProduct());
+            Product updateProduct = service.updateProduct(saveEvent.getProduct());
+            message = updateProduct != null ? cacheService.reloadProductCache("UPDATE", updateProduct.getId()) : "";
             isUpdatedSuccess = true;
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -91,7 +113,15 @@ public class ProductDetailForm extends FormLayout {
             quantity.clear();
             price.clear();
             supplierComboBox.clear();
-            service.showSuccessNotification("Product is updated successfully!");
+
+            if (!message.equals("")) {
+                service.showSuccessNotification(message);
+            } else {
+                service.showErrorNotification("Exist product cannot be updated successfully!");
+            }
+
+            updateProductGrid();
+            fireEvent(new ProductDetailForm.CloseEvent(this));
         } else {
             service.showErrorNotification("Product cannot be updated!");
         }
@@ -219,6 +249,7 @@ public class ProductDetailForm extends FormLayout {
     public class CloseEvent extends ProductDetailForm.ProductDetailFormEvent {
         CloseEvent(ProductDetailForm source) {
             super(source, null);
+            dialog.close();
         }
     }
 
@@ -229,5 +260,12 @@ public class ProductDetailForm extends FormLayout {
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
                                                                   ComponentEventListener<T> listener) {
         return getEventBus().addListener(eventType, listener);
+    }
+
+    /**
+     * Update Product grid
+     */
+    private void updateProductGrid() {
+        grid.setItems(service.getAllProductsFromCache(""));
     }
 }

@@ -158,6 +158,7 @@ public class NewProductForm extends FormLayout {
         cancel.addClickListener(e -> fireEvent(new NewProductForm.CloseEvent(this)));
 
         binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
+        
         return new HorizontalLayout(save, cancel);
     }
 

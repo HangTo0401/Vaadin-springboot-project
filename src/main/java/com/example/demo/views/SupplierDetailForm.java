@@ -35,7 +35,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class SupplierDetailForm extends FormLayout {
     // Other fields omitted
@@ -67,7 +66,12 @@ public class SupplierDetailForm extends FormLayout {
     private Supplier supplier;
     private boolean isUpdatedSuccess = false;
 
-    public SupplierDetailForm(Dialog dialog, Grid<Supplier> grid, MainService service, CacheService cacheService, List<Product> productsList, List<Supplier> suppliersList) {
+    public SupplierDetailForm(Dialog dialog,
+                              Grid<Supplier> grid,
+                              MainService service,
+                              CacheService cacheService,
+                              List<Product> productsList,
+                              List<Supplier> suppliersList) {
         this.dialog = dialog;
         this.grid = grid;
         this.service = service;
@@ -91,7 +95,7 @@ public class SupplierDetailForm extends FormLayout {
     }
 
     /**
-     * Reading product detail
+     * Reading supplier detail
      */
     public void setSupplier(Supplier supplier) {
         this.supplier = supplier;
@@ -100,6 +104,9 @@ public class SupplierDetailForm extends FormLayout {
         }
     }
 
+    /**
+     * Update supplier detail
+     */
     private void updateSupplier(SupplierDetailForm.SaveEvent saveEvent) {
         String message = "";
 
@@ -124,8 +131,9 @@ public class SupplierDetailForm extends FormLayout {
             } else {
                 service.showErrorNotification("Exist supplier cannot be updated successfully!");
             }
-            grid.setItems(service.getAllSuppliersFromCache(""));
-            dialog.close();
+
+            updateSupplierGrid();
+            fireEvent(new SupplierDetailForm.CloseEvent(this));
         } else {
             service.showErrorNotification("Supplier cannot be updated!");
         }
@@ -153,6 +161,7 @@ public class SupplierDetailForm extends FormLayout {
         cancel.addClickListener(e -> fireEvent(new SupplierDetailForm.CloseEvent(this)));
 
         binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
+
         return new HorizontalLayout(save, cancel);
     }
 
@@ -259,6 +268,7 @@ public class SupplierDetailForm extends FormLayout {
     public class CloseEvent extends SupplierDetailForm.SupplierDetailFormEvent {
         CloseEvent(SupplierDetailForm source) {
             super(source, null);
+            dialog.close();
         }
     }
 
@@ -269,5 +279,12 @@ public class SupplierDetailForm extends FormLayout {
     public <T extends ComponentEvent<?>> Registration addListener(Class<T> eventType,
                                                                   ComponentEventListener<T> listener) {
         return getEventBus().addListener(eventType, listener);
+    }
+
+    /**
+     * Update Supplier grid
+     */
+    private void updateSupplierGrid() {
+        grid.setItems(service.getAllSuppliersFromCache(""));
     }
 }
