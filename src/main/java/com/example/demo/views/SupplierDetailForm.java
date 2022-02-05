@@ -35,6 +35,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class SupplierDetailForm extends FormLayout {
     // Other fields omitted
@@ -208,7 +209,7 @@ public class SupplierDetailForm extends FormLayout {
         // Phone number
         binder.forField(phoneNumber).asRequired("Required")
               .withValidator(phoneNumber -> !phoneNumber.isBlank() && !phoneNumber.isEmpty(), "Phone number is required field!")
-              .withValidator(new RegexpValidator("Phone number is invalid!", "84|0[3|5|7|8|9])+([0-9]{8}"))
+              .withValidator(new RegexpValidator("Phone number is invalid!", "\\d{10}|(?:\\d{3}-){2}\\d{4}|\\(\\d{3}\\)\\d{3}-?\\d{4}"))
               .bind(Supplier::getPhoneNumber, Supplier::setPhoneNumber);
 
         // Email

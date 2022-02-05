@@ -238,7 +238,7 @@ public class NewSupplierForm extends FormLayout {
         // Phone number
         binder.forField(phoneNumber).asRequired("Required")
               .withValidator(phoneNumber -> !phoneNumber.isBlank() && !phoneNumber.isEmpty(), "Phone number is required field!")
-              .withValidator(new RegexpValidator("Phone number is invalid!", "84|0[3|5|7|8|9])+([0-9]{8}"))
+              .withValidator(new RegexpValidator("Phone number is invalid!", "\\d{10}|(?:\\d{3}-){2}\\d{4}|\\(\\d{3}\\)\\d{3}-?\\d{4}"))
               .bind(Supplier::getPhoneNumber, Supplier::setPhoneNumber);
 
         // Email
