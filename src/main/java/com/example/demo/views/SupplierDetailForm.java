@@ -1,29 +1,33 @@
 package com.example.demo.views;
 
+
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 import com.example.demo.service.MainService;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.ComponentEventListener;
+import com.example.demo.cache.CacheService;
+
 import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
-import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.converter.LocalDateToDateConverter;
-import com.vaadin.flow.data.converter.StringToDoubleConverter;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.data.validator.RegexpValidator;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.converter.LocalDateToDateConverter;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -51,14 +55,22 @@ public class SupplierDetailForm extends FormLayout {
     Button cancel = new Button("Cancel");
 
     private MainService service;
+    private CacheService cacheService;
+
     private List<Product> productsList;
     private List<Supplier> suppliersList;
+
+    private Dialog dialog;
+    private Grid<Supplier> grid;
 
     private Supplier supplier;
     private boolean isUpdatedSuccess = false;
 
-    public SupplierDetailForm(MainService service, List<Product> productsList, List<Supplier> suppliersList) {
+    public SupplierDetailForm(Dialog dialog, Grid<Supplier> grid, MainService service, CacheService cacheService, List<Product> productsList, List<Supplier> suppliersList) {
+        this.dialog = dialog;
+        this.grid = grid;
         this.service = service;
+        this.cacheService = cacheService;
         this.productsList = productsList;
         this.suppliersList = suppliersList;
         addClassName("supplier-detail-form");
@@ -88,8 +100,11 @@ public class SupplierDetailForm extends FormLayout {
     }
 
     private void updateSupplier(SupplierDetailForm.SaveEvent saveEvent) {
+        String message = "";
+
         try {
-            service.updateSupplier(saveEvent.getSupplier());
+            Supplier updateSupplier = service.updateSupplier(saveEvent.getSupplier());
+            message = updateSupplier != null ? cacheService.reloadSupplierCache("UPDATE", updateSupplier.getId()) : "";
             isUpdatedSuccess = true;
         } catch (Exception exception) {
             exception.printStackTrace();
@@ -102,8 +117,14 @@ public class SupplierDetailForm extends FormLayout {
             phoneNumber.clear();
             address.clear();
             email.clear();
-//            binder.getFields().forEach(f -> f.clear());
-            service.showSuccessNotification("Supplier is updated successfully!");
+
+            if (!message.equals("")) {
+                service.showSuccessNotification(message);
+            } else {
+                service.showErrorNotification("Exist supplier cannot be updated successfully!");
+            }
+            grid.setItems(service.getAllSuppliersFromCache(""));
+            dialog.close();
         } else {
             service.showErrorNotification("Supplier cannot be updated!");
         }
@@ -131,8 +152,6 @@ public class SupplierDetailForm extends FormLayout {
         cancel.addClickListener(e -> fireEvent(new SupplierDetailForm.CloseEvent(this)));
 
         binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
-//        binder.addStatusChangeListener(event -> save.setEnabled(true));
-
         return new HorizontalLayout(save, cancel);
     }
 
@@ -189,6 +208,7 @@ public class SupplierDetailForm extends FormLayout {
         // Phone number
         binder.forField(phoneNumber).asRequired("Required")
               .withValidator(phoneNumber -> !phoneNumber.isBlank() && !phoneNumber.isEmpty(), "Phone number is required field!")
+              .withValidator(new RegexpValidator("Phone number is invalid!", "84|0[3|5|7|8|9])+([0-9]{8}"))
               .bind(Supplier::getPhoneNumber, Supplier::setPhoneNumber);
 
         // Email
