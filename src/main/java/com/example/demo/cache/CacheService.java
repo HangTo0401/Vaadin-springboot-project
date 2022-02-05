@@ -49,8 +49,8 @@ public class CacheService {
         return element != null ? (Supplier) element.getObjectValue() : null;
     }
 
-    public String reloadSupplierCache(String action, Long id) {
-        String message = cacheConfig.reloadSupplierCache(action, id);
+    public String reloadSupplierCache(String action, Supplier supplier) {
+        String message = cacheConfig.reloadSupplierCache(action, supplier);
         return message;
     }
 
@@ -65,8 +65,8 @@ public class CacheService {
         return element != null ? (Product) element.getObjectValue() : null;
     }
 
-    public String reloadProductCache(String action, Long id) {
-        String message = cacheConfig.reloadProductCache(action, id);
+    public String reloadProductCache(String action, Product product) {
+        String message = cacheConfig.reloadProductCache(action, product);
         return message;
     }
 }
