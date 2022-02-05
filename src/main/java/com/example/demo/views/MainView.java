@@ -86,14 +86,6 @@ public class MainView extends VerticalLayout {
         addClassName("main-view");
         setupLayout(DEFAULT_LAYOUT);
 
-        // Event listener for supplierDetailForm
-        supplierDetailForm.addListener(SupplierDetailForm.SaveEvent.class, this::updateSupplier);
-        supplierDetailForm.addListener(SupplierDetailForm.CloseEvent.class, e -> closeSupplierDetailDialog());
-
-        // Event listener for productDetailForm
-        productDetailForm.addListener(ProductDetailForm.SaveEvent.class, this::updateProduct);
-        productDetailForm.addListener(ProductDetailForm.CloseEvent.class, e -> closeProductDetailDialog());
-
         add(mainLayout);
         updateSupplierList();
     }
@@ -107,7 +99,12 @@ public class MainView extends VerticalLayout {
                                                     service.getAllSuppliersFromCache(""));
         supplierDetailForm.setWidth("25em");
 
-        productDetailForm = new ProductDetailForm(service, service.getAllProductsFromCache(""), service.getAllSuppliersFromCache(""));
+        productDetailForm = new ProductDetailForm(productDetailDialog,
+                                                  productGrid,
+                                                  service,
+                                                  cacheService,
+                                                  service.getAllProductsFromCache(""),
+                                                  service.getAllSuppliersFromCache(""));
         productDetailForm.setWidth("25em");
     }
 
@@ -178,110 +175,67 @@ public class MainView extends VerticalLayout {
     }
 
     /**
-     * Update Supplier
-     */
-    private void updateSupplier(SupplierDetailForm.SaveEvent event) {
-//        Supplier updateSupplier = event.getSupplier();
-//        service.updateSupplier(updateSupplier);
-//        listSupplierDataProvider.refreshItem(updateSupplier);
-//        supplierGrid.getDataProvider().refreshItem(updateSupplier);
-//        closeSupplierDetailDialog();
-//        updateSupplierList();
-    }
-
-    /**
      * Delete Supplier in grid
      */
     private void deleteSupplier(Supplier supplier) {
+        String message = "";
         boolean isFound = service.deleteSupplierById(supplier.getId());
-//        productCacheService.deleteProductCache(event.getProduct());
         if (isFound) {
-            service.showErrorNotification("Fail to delete supplier: " + supplier.getName());
+            message = "Fail to delete supplier: " + supplier.getName();
+            service.showErrorNotification(message);
         } else {
-            service.showSuccessNotification("Delete supplier successfully!");
-        }
+            // Delete entry in cache
+            message = cacheService.reloadSupplierCache("DELETE", supplier);
+            service.showSuccessNotification(message);
 
-        ListDataProvider<Supplier> dataProvider = (ListDataProvider<Supplier>) supplierGrid.getDataProvider();
-        dataProvider.getItems().remove(supplier);
-        dataProvider.refreshAll();
-        updateProductList();
+            // Refresh supplier grid
+            ListDataProvider<Supplier> dataProvider = (ListDataProvider<Supplier>) supplierGrid.getDataProvider();
+            dataProvider.getItems().remove(supplier);
+            dataProvider.refreshAll();
+            updateProductGrid();
+        }
     }
 
     /**
-     * Update Supplier list
+     * Update Supplier grid
      */
-    private void updateSupplierList() {
+    private void updateSupplierGrid() {
         supplierGrid.setItems(service.getAllSuppliersFromCache(supplierFilterText.getValue()));
     }
 
     /**
-     * Update Product
+     * Update Product grid
      */
-    private void updateProduct(ProductDetailForm.SaveEvent product) {
-        Product updateProduct = product.getProduct();
-        service.updateProduct(updateProduct);
-        listProductDataProvider.refreshItem(updateProduct);
-        productGrid.getDataProvider().refreshItem(updateProduct);
-        closeProductDetailDialog();
-        updateProductList();
+    private void updateProductGrid() {
+        productGrid.setItems(service.getAllProductsFromCache(productFilterText.getValue()));
     }
 
     /**
      * Delete Product in grid
      */
     private void deleteProduct(Product product) {
+        String message = "";
         boolean isFound = service.deleteProductById(product.getId());
-//        productCacheService.deleteProductCache(event.getProduct());
         if (isFound) {
-            service.showErrorNotification("Fail to delete product: " + product.getProductName());
+            message = "Fail to delete product: " + product.getProductName();
+            service.showErrorNotification(message);
         } else {
-            service.showSuccessNotification("Delete product successfully!");
+            // Delete entry in cache
+            message = cacheService.reloadProductCache("DELETE", product);
+            service.showSuccessNotification(message);
+
+            // Refresh product grid
+            ListDataProvider<Product> dataProvider = (ListDataProvider<Product>) productGrid.getDataProvider();
+            dataProvider.getItems().remove(product);
+            dataProvider.refreshAll();
         }
-
-        ListDataProvider<Product> dataProvider = (ListDataProvider<Product>) productGrid.getDataProvider();
-        dataProvider.getItems().remove(product);
-        dataProvider.refreshAll();
-    }
-
-    /**
-     * Update Product list
-     */
-    private void updateProductList() {
-        productGrid.setItems(service.getAllProductsFromCache(productFilterText.getValue()));
-    }
-
-    /**
-     * Close Product dialog
-     */
-    private void closeNewProductDialog() {
-        newProductForm.setProduct(null);
-        removeClassName("editing");
-        newProductDialog.close();
-    }
-
-    /**
-     * Close Product detail dialog
-     */
-    private void closeProductDetailDialog() {
-        productDetailForm.setProduct(null);
-        removeClassName("editing");
-        productDetailDialog.close();
-    }
-
-    /**
-     * Close Supplier detail dialog
-     */
-    private void closeSupplierDetailDialog() {
-        supplierDetailForm.setSupplier(null);
-        removeClassName("editing");
-        supplierDetailDialog.close();
     }
 
     private void createSupplierSearchArea() {
         supplierFilterText.setPlaceholder("Search");
         supplierFilterText.setClearButtonVisible(true);
         supplierFilterText.setValueChangeMode(ValueChangeMode.LAZY);
-        supplierFilterText.addValueChangeListener(e -> updateSupplierList());
+        supplierFilterText.addValueChangeListener(e -> updateSupplierGrid());
         supplierActionButtonsLayout.add(supplierFilterText);
 
         // New button
@@ -292,7 +246,7 @@ public class MainView extends VerticalLayout {
         productFilterText.setPlaceholder("Search by name...");
         productFilterText.setClearButtonVisible(true);
         productFilterText.setValueChangeMode(ValueChangeMode.LAZY);
-        productFilterText.addValueChangeListener(e -> updateProductList());
+        productFilterText.addValueChangeListener(e -> updateProductGrid());
         productActionButtonsLayout.add(productFilterText);
 
         // New button
