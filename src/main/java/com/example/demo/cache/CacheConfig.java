@@ -180,7 +180,8 @@ public class CacheConfig {
 
         try {
             // Get record from db
-            Supplier supplier = supplierRepository.findById(id).orElseThrow(() -> new RuntimeException("Supplier not found"));
+            Supplier supplier = supplierRepository.findById(id)
+                                                  .orElseThrow(() -> new RuntimeException("Supplier not found"));
 
             if (action.equals("ADD")) {
                 // Add new record to cache
@@ -258,7 +259,10 @@ public class CacheConfig {
 
         try {
             if (deleteId != null) {
-                Supplier existSupplier = (Supplier) supplierList.stream().filter(supplier -> supplier.getId() == deleteId);
+                Supplier existSupplier = (Supplier) supplierList.stream()
+                                                                .filter(supplier -> supplier.getId() == deleteId)
+                                                                .findAny() // If 'findAny' then return found
+                                                                .orElse(null); // If not found, return null
                 log.info("Delete element: " + new Element(existSupplier.getId(), existSupplier));
                 supplierCache.remove(new Element(existSupplier.getId(), existSupplier));
                 message = "Supplier is deleted in cache successfully!";
@@ -283,7 +287,8 @@ public class CacheConfig {
 
         try {
             // Get record from db
-            Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+            Product product = productRepository.findById(id)
+                                               .orElseThrow(() -> new RuntimeException("Product not found"));
 
             if (action.equals("ADD")) {
                 // Add new record to cache
@@ -334,7 +339,10 @@ public class CacheConfig {
 
         try {
             if (updateId != null) {
-                Product existProduct = (Product) productList.stream().filter(product -> product.getId() == updateId);
+                Product existProduct = (Product) productList.stream()
+                                                            .filter(supplier -> supplier.getId() == updateId)
+                                                            .findAny() // If 'findAny' then return found
+                                                            .orElse(null); // If not found, return null
                 log.info("Exist product: " + new Element(existProduct.getId(), existProduct));
                 supplierCache.put(new Element(existProduct.getId(), existProduct));
                 message = "Exist product is updated in cache successfully!";
@@ -358,7 +366,10 @@ public class CacheConfig {
 
         try {
             if (deleteId != null) {
-                Product existProduct = (Product) productList.stream().filter(product -> product.getId() == deleteId);
+                Product existProduct = (Product) productList.stream()
+                                                            .filter(supplier -> supplier.getId() == deleteId)
+                                                            .findAny() // If 'findAny' then return found
+                                                            .orElse(null); // If not found, return null
                 log.info("Delete element: " + new Element(existProduct.getId(), existProduct));
                 supplierCache.remove(new Element(existProduct.getId(), existProduct));
                 message = "Product is deleted in cache successfully!";
