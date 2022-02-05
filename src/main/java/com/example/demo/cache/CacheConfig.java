@@ -111,6 +111,7 @@ public class CacheConfig {
             supplierList = supplierCacheQuery.includeValues()
                                              .execute().all()
                                              .stream().map(result -> (Supplier) result.getValue()).collect(Collectors.toList());
+
             supplierList.stream().forEach(System.out::println);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -172,26 +173,28 @@ public class CacheConfig {
     /**
      * Reload data in supplier cache
      * @param action
-     * @param id
+     * @param supplier
      * */
-    public String reloadSupplierCache(String action, Long id) {
+    public String reloadSupplierCache(String action, Supplier supplier) {
         log.info("Reload data in cache " + CacheName.SUPPLIER_CACHE);
+        Supplier supplierEntry = null;
         String responseMessage = "";
 
         try {
             // Get record from db
-            Supplier supplier = supplierRepository.findById(id)
+            if (!action.equals("DELETE")) {
+                supplierEntry = supplierRepository.findById(supplier.getId())
                                                   .orElseThrow(() -> new RuntimeException("Supplier not found"));
-
-            if (action.equals("ADD")) {
-                // Add new record to cache
-                responseMessage = addNewSupplierToCache(supplier);
-            } else if (action.equals("UPDATE")) {
-                // Update record to cache
-                responseMessage = updateSupplierInCache(supplier.getId());
-            } else if (action.equals("DELETE")) {
-                // Delete record to cache
-                responseMessage = deleteSupplierInCache(supplier.getId());
+                if (action.equals("ADD")) {
+                    // Add new record to cache
+                    responseMessage = addNewSupplierToCache(supplierEntry);
+                } else if (action.equals("UPDATE")) {
+                    // Update record to cache
+                    responseMessage = updateSupplierInCache(supplierEntry.getId());
+                }
+            } else {
+                // Delete record to cache after delete in db successfully
+                responseMessage = deleteSupplierInCache(supplier);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -251,21 +254,17 @@ public class CacheConfig {
 
     /**
      * Delete supplier in cache
-     * @param deleteId
+     * @param deleteSupplier
      * */
-    public String deleteSupplierInCache(Long deleteId) {
+    public String deleteSupplierInCache(Supplier deleteSupplier) {
         log.info("Delete supplier in cache:");
         String message = "";
 
         try {
-            if (deleteId != null) {
-                Supplier existSupplier = (Supplier) supplierList.stream()
-                                                                .filter(supplier -> supplier.getId() == deleteId)
-                                                                .findAny() // If 'findAny' then return found
-                                                                .orElse(null); // If not found, return null
-                log.info("Delete element: " + new Element(existSupplier.getId(), existSupplier));
-                supplierCache.remove(new Element(existSupplier.getId(), existSupplier));
-                message = "Supplier is deleted in cache successfully!";
+            if (deleteSupplier.getId() != null) {
+                log.info("Delete element: " + new Element(deleteSupplier.getId(), deleteSupplier));
+                boolean deletedFlag = supplierCache.remove(deleteSupplier.getId());
+                message = deletedFlag ? "Supplier is deleted in cache successfully!" : "Fail to delete supplier in cache";
             } else {
                 log.info("Exist supplier which is deleted is invalid!");
                 message = "Exist supplier which is deleted is invalid";
@@ -279,26 +278,29 @@ public class CacheConfig {
     /**
      * Reload data in product cache
      * @param action
-     * @param id
+     * @param product
      * */
-    public String reloadProductCache(String action, Long id) {
+    public String reloadProductCache(String action, Product product) {
         log.info("Reload data in cache " + CacheName.PRODUCT_CACHE);
+        Product productEntry = null;
         String responseMessage = "";
 
         try {
-            // Get record from db
-            Product product = productRepository.findById(id)
-                                               .orElseThrow(() -> new RuntimeException("Product not found"));
+            if (!action.equals("DELETE")) {
+                // Get record from db
+                productEntry = productRepository.findById(product.getId())
+                        .orElseThrow(() -> new RuntimeException("Product not found"));
 
-            if (action.equals("ADD")) {
-                // Add new record to cache
-                responseMessage = addNewProductToCache(product);
-            } else if (action.equals("UPDATE")) {
-                // Update record to cache
-                responseMessage = updateProductInCache(product.getId());
-            } else if (action.equals("DELETE")) {
+                if (action.equals("ADD")) {
+                    // Add new record to cache
+                    responseMessage = addNewProductToCache(productEntry);
+                } else if (action.equals("UPDATE")) {
+                    // Update record to cache
+                    responseMessage = updateProductInCache(productEntry.getId());
+                }
+            } else {
                 // Delete record to cache
-                responseMessage = deleteProductInCache(product.getId());
+                responseMessage = deleteProductInCache(product);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -317,7 +319,7 @@ public class CacheConfig {
         try {
             if (product != null) {
                 log.info("New product: " + new Element(product.getId(), product));
-                supplierCache.put(new Element(product.getId(), product));
+                productCache.put(new Element(product.getId(), product));
                 message = "New product is added to cache successfully!";
             } else {
                 log.info("New product is invalid!");
@@ -344,7 +346,7 @@ public class CacheConfig {
                                                             .findAny() // If 'findAny' then return found
                                                             .orElse(null); // If not found, return null
                 log.info("Exist product: " + new Element(existProduct.getId(), existProduct));
-                supplierCache.put(new Element(existProduct.getId(), existProduct));
+                productCache.put(new Element(existProduct.getId(), existProduct));
                 message = "Exist product is updated in cache successfully!";
             } else {
                 log.info("Exist product which is updated is invalid!");
@@ -358,21 +360,17 @@ public class CacheConfig {
 
     /**
      * Delete product in cache
-     * @param deleteId
+     * @param deleteProduct
      * */
-    public String deleteProductInCache(Long deleteId) {
-        log.info("Delete product in cache with id: " + deleteId);
+    public String deleteProductInCache(Product deleteProduct) {
+        log.info("Delete product in cache with id: " + deleteProduct.getId());
         String message = "";
 
         try {
-            if (deleteId != null) {
-                Product existProduct = (Product) productList.stream()
-                                                            .filter(supplier -> supplier.getId() == deleteId)
-                                                            .findAny() // If 'findAny' then return found
-                                                            .orElse(null); // If not found, return null
-                log.info("Delete element: " + new Element(existProduct.getId(), existProduct));
-                supplierCache.remove(new Element(existProduct.getId(), existProduct));
-                message = "Product is deleted in cache successfully!";
+            if (deleteProduct.getId() != null) {
+                log.info("Delete element: " + new Element(deleteProduct.getId(), deleteProduct));
+                boolean deletedFlag = productCache.remove(deleteProduct.getId());
+                message = deletedFlag ? "Product is deleted in cache successfully!" : "Fail to delete product in cache";
             } else {
                 log.info("Delete product is invalid!");
                 message = "Delete product is invalid!";
