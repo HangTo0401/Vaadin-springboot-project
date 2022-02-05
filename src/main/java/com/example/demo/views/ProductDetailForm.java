@@ -27,6 +27,22 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.List;
 
 public class ProductDetailForm extends FormLayout {
+    private MainService service;
+
+    private CacheService cacheService;
+
+    private List<Product> productsList;
+
+    private List<Supplier> suppliersList;
+
+    private Dialog dialog;
+
+    private Grid<Product> grid;
+
+    private Product product;
+
+    private boolean isUpdatedSuccess = false;
+
     // Other fields omitted
     Binder<Product> binder = new BeanValidationBinder<>(Product.class);
 
@@ -41,18 +57,6 @@ public class ProductDetailForm extends FormLayout {
 
     Button save = new Button("Save");
     Button cancel = new Button("Cancel");
-
-    private MainService service;
-    private CacheService cacheService;
-
-    private List<Product> productsList;
-    private List<Supplier> suppliersList;
-
-    private Dialog dialog;
-    private Grid<Product> grid;
-
-    private Product product;
-    private boolean isUpdatedSuccess = false;
 
     public ProductDetailForm(Dialog dialog,
                              Grid<Product> grid,
@@ -101,7 +105,7 @@ public class ProductDetailForm extends FormLayout {
 
         try {
             Product updateProduct = service.updateProduct(saveEvent.getProduct());
-            message = updateProduct != null ? cacheService.reloadProductCache("UPDATE", updateProduct.getId()) : "";
+            message = updateProduct != null ? cacheService.reloadProductCache("UPDATE", updateProduct) : "";
             isUpdatedSuccess = true;
         } catch (Exception exception) {
             exception.printStackTrace();
