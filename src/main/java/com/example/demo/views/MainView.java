@@ -87,7 +87,7 @@ public class MainView extends VerticalLayout {
         setupLayout(DEFAULT_LAYOUT);
 
         add(mainLayout);
-        updateSupplierList();
+        updateSupplierGrid();
     }
 
     private void configureForms() {
@@ -207,7 +207,7 @@ public class MainView extends VerticalLayout {
      * Update Product grid
      */
     private void updateProductGrid() {
-        productGrid.setItems(service.getAllProductsFromCache(productFilterText.getValue()));
+        productGrid.setItems(service.getAllProductsFromCache(""));
     }
 
     /**

@@ -79,34 +79,15 @@ public class MainService {
      * @param id
      * */
     public Supplier getSupplierById(Long id) {
-        Supplier supplier = new Supplier();
-
         try {
-            if (supplier != null) {
-                return supplier;
-            } else {
-                Optional<Supplier> optionalSupplier = supplierRepository.findById(id);
-                if (optionalSupplier.isPresent()) {
-                    return optionalSupplier.get();
-                }
+            Optional<Supplier> optionalSupplier = supplierRepository.findById(id);
+            if (optionalSupplier.isPresent()) {
+                return optionalSupplier.get();
             }
         } catch (Exception e) {
             log.error("Could not retrieve supplier from cache with id: " + id);
         }
-        return supplier;
-    }
-
-    /**
-     * Delete supplier
-     * @param supplier
-     * */
-    public void deleteSupplier(Supplier supplier) {
-        try {
-            supplierRepository.delete(supplier);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            log.error("Could not delete supplier with id: " + supplier.getId());
-        }
+        return null;
     }
 
     /**
@@ -175,6 +156,7 @@ public class MainService {
      * */
     public Product createProduct(Product product) {
         Product newProduct = null;
+
         try {
             if (product == null) {
                 System.err.println("Product is null!");
@@ -192,19 +174,15 @@ public class MainService {
      * @param productId
      * */
     public Product getProductById(Long productId) {
-        Optional<Product> optionalProduct = productRepository.findById(productId);
-        if (optionalProduct.isPresent()) {
-            return optionalProduct.get();
+        try {
+            Optional<Product> optionalProduct = productRepository.findById(productId);
+            if (optionalProduct.isPresent()) {
+                return optionalProduct.get();
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
         return null;
-    }
-
-    /**
-     * Delete product
-     * @param product
-     * */
-    public void deleteProduct(Product product) {
-        productRepository.delete(product);
     }
 
     /**
@@ -213,11 +191,13 @@ public class MainService {
      * */
     public boolean deleteProductById(Long id) {
         boolean isFound = false;
+
         try {
             productRepository.deleteById(id);
             isFound = productRepository.existsById(id);
         } catch (Exception ex) {
             ex.printStackTrace();
+            log.error("Could not delete product with id: " + id);
         }
         return isFound;
     }
@@ -227,11 +207,19 @@ public class MainService {
      * @param product
      * */
     public Product updateProduct(Product product) {
-        if (product == null) {
-            System.err.println("Product is null!");
-            return null;
+        Product updateProduct = null;
+
+        try {
+            if (product == null) {
+                System.err.println("Product is null!");
+                return null;
+            }
+            updateProduct = productRepository.save(product);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            log.error("Could not update product with id: " + product.getId());
         }
-        return productRepository.save(product);
+        return updateProduct;
     }
 
     /**
