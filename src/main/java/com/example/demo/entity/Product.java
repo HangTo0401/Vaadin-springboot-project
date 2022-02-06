@@ -22,10 +22,10 @@ public class Product extends AbstractEntity implements Serializable {
     private String lastname;
 
     @Column(name="quantity")
-    private int quantity;
+    private Integer quantity;
 
     @Column(name="price")
-    private double price;
+    private Double price;
 
     // Children
     @ManyToOne
