@@ -2,14 +2,18 @@ package com.example.demo.cache;
 
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import net.sf.ehcache.Element;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
+
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
 @Service
@@ -29,12 +33,10 @@ public class CacheService {
     }
 
     /**
-     * Cleans the entire cache
+     * Cleans all entries in cache
      */
     @Scheduled(cron = CRON_TAB_EVERY_MID_NIGHT)
     private void refreshCache() {
-//        cacheManager.getCacheNames().stream()
-//                    .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
         cacheManager.clearAll();
     }
 
