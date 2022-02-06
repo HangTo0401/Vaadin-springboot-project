@@ -82,6 +82,7 @@ public class SupplierDetailForm extends FormLayout {
         this.cacheService = cacheService;
         this.productsList = productsList;
         this.suppliersList = suppliersList;
+
         addClassName("supplier-detail-form");
         setPlaceHolder();
         validateForm();

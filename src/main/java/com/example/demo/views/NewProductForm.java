@@ -41,8 +41,6 @@ public class NewProductForm extends FormLayout {
 
     private List<Supplier> suppliersList;
 
-    private String filterText;
-
     private Dialog dialog;
 
     private Grid<Product> grid;
@@ -68,14 +66,12 @@ public class NewProductForm extends FormLayout {
 
     public NewProductForm(Dialog dialog,
                           Grid<Product> grid,
-                          String filterText,
                           MainService service,
                           CacheService cacheService,
                           List<Product> productsList,
                           List<Supplier> suppliersList) {
         this.dialog = dialog;
         this.grid = grid;
-        this.filterText = filterText;
         this.service = service;
         this.cacheService = cacheService;
         this.productsList = productsList;
@@ -290,6 +286,6 @@ public class NewProductForm extends FormLayout {
      * Update Product grid
      */
     private void updateProductGrid() {
-        grid.setItems(service.getAllProductsFromCache(filterText));
+        grid.setItems(service.getAllProductsFromCache(""));
     }
 }

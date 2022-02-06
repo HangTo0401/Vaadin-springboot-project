@@ -26,7 +26,6 @@ import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Date;
 import java.time.LocalDate;
@@ -42,8 +41,6 @@ public class NewSupplierForm extends FormLayout {
     private List<Product> productsList;
 
     private List<Supplier> suppliersList;
-
-    private String filterText;
 
     private Dialog dialog;
 
@@ -69,14 +66,12 @@ public class NewSupplierForm extends FormLayout {
 
     public NewSupplierForm(Dialog dialog,
                            Grid<Supplier> grid,
-                           String filterText,
                            MainService service,
                            CacheService cacheService,
                            List<Product> productsList,
                            List<Supplier> suppliersList) {
         this.dialog = dialog;
         this.grid = grid;
-        this.filterText = filterText;
         this.service = service;
         this.cacheService = cacheService;
         this.productsList = productsList;
@@ -298,6 +293,6 @@ public class NewSupplierForm extends FormLayout {
      * Update Supplier grid
      */
     private void updateSupplierGrid() {
-        grid.setItems(service.getAllSuppliersFromCache(filterText));
+        grid.setItems(suppliersList);
     }
 }
