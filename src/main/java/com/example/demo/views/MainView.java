@@ -136,7 +136,6 @@ public class MainView extends VerticalLayout {
             newSupplierDialog = new Dialog();
             newSupplierForm = new NewSupplierForm(newSupplierDialog,
                                                   supplierGrid,
-                                                  supplierFilterText.getValue(),
                                                   service,
                                                   cacheService,
                                                   service.getAllProductsFromCache(""),
@@ -159,7 +158,6 @@ public class MainView extends VerticalLayout {
             newProductDialog = new Dialog();
             newProductForm = new NewProductForm(newProductDialog,
                                                 productGrid,
-                                                productFilterText.getValue(),
                                                 service,
                                                 cacheService,
                                                 service.getAllProductsFromCache(""),
@@ -189,10 +187,31 @@ public class MainView extends VerticalLayout {
             service.showSuccessNotification(message);
 
             // Refresh supplier grid
-            ListDataProvider<Supplier> dataProvider = (ListDataProvider<Supplier>) supplierGrid.getDataProvider();
-            dataProvider.getItems().remove(supplier);
-            dataProvider.refreshAll();
+            listSupplierDataProvider = (ListDataProvider<Supplier>) supplierGrid.getDataProvider();
+            listSupplierDataProvider.getItems().remove(supplier);
+            listSupplierDataProvider.refreshAll();
             updateProductGrid();
+        }
+    }
+
+    /**
+     * Filter supplier based on search text input
+     */
+    public void filterSupplier() {
+        if (supplierFilterText.getValue() != null) {
+            listSuppliers = service.getAllSuppliersFromCache("");
+            listSupplierDataProvider = DataProvider.ofCollection(listSuppliers);
+
+            listSupplierDataProvider.addFilter(supplier ->
+                    supplier.getFirstname().toLowerCase().contains(supplierFilterText.getValue().toLowerCase()) ||
+                    supplier.getLastname().toLowerCase().contains(supplierFilterText.getValue().toLowerCase()) ||
+                    LocalDate.ofInstant(supplier.getDateOfBirth().toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                             .contains(supplierFilterText.getValue()) ||
+                    supplier.getEmail().contains(supplierFilterText.getValue())
+            );
+            supplierGrid.setDataProvider(listSupplierDataProvider);
+        } else {
+            listSupplierDataProvider.clearFilters();
         }
     }
 
@@ -204,10 +223,36 @@ public class MainView extends VerticalLayout {
     }
 
     /**
+     * Filter product based on search text input
+     */
+    public void filterProduct() {
+        if (productFilterText.getValue() != null) {
+            listProducts = service.getAllProductsFromCache("");
+            listProductDataProvider = DataProvider.ofCollection(listProducts);
+
+            listProductDataProvider.setFilter(product ->
+                    product.getFirstname().toLowerCase().contains(productFilterText.getValue().toLowerCase()) ||
+                    product.getLastname().toLowerCase().contains(productFilterText.getValue().toLowerCase()) ||
+                    (product.getSupplier().getFirstname() != null && product.getSupplier().getLastname() != null ?
+                            product.getSupplier().getFirstname().toLowerCase().concat(" ")
+                                   .concat(product.getSupplier().getLastname().toLowerCase())
+                                   .contains(productFilterText.getValue().toLowerCase()) :
+                            null
+                    ) ||
+                    product.getSupplier().getLastname().toLowerCase().contains(productFilterText.getValue().toLowerCase()) ||
+                    String.format("$%(,.2f", product.getPrice()).contains(productFilterText.getValue())
+            );
+            productGrid.setDataProvider(listProductDataProvider);
+        } else {
+            listProductDataProvider.clearFilters();
+        }
+    }
+
+    /**
      * Update Product grid
      */
     private void updateProductGrid() {
-        productGrid.setItems(service.getAllProductsFromCache(""));
+        productGrid.setItems(service.getAllProductsFromCache(productFilterText.getValue()));
     }
 
     /**
@@ -225,17 +270,18 @@ public class MainView extends VerticalLayout {
             service.showSuccessNotification(message);
 
             // Refresh product grid
-            ListDataProvider<Product> dataProvider = (ListDataProvider<Product>) productGrid.getDataProvider();
-            dataProvider.getItems().remove(product);
-            dataProvider.refreshAll();
+            listProductDataProvider = (ListDataProvider<Product>) productGrid.getDataProvider();
+            listProductDataProvider.getItems().remove(product);
+            listProductDataProvider.refreshAll();
         }
     }
 
     private void createSupplierSearchArea() {
-        supplierFilterText.setPlaceholder("Search");
+        supplierFilterText.setPlaceholder("Search by name, birthdate, email...");
+        supplierFilterText.setWidth("20em");
         supplierFilterText.setClearButtonVisible(true);
         supplierFilterText.setValueChangeMode(ValueChangeMode.LAZY);
-        supplierFilterText.addValueChangeListener(e -> updateSupplierGrid());
+        supplierFilterText.addValueChangeListener(e -> filterSupplier());
         supplierActionButtonsLayout.add(supplierFilterText);
 
         // New button
@@ -243,10 +289,11 @@ public class MainView extends VerticalLayout {
     }
 
     private void createProductSearchArea() {
-        productFilterText.setPlaceholder("Search by name...");
+        productFilterText.setPlaceholder("Search by product name, supplier name, price...");
+        productFilterText.setWidth("25em");
         productFilterText.setClearButtonVisible(true);
         productFilterText.setValueChangeMode(ValueChangeMode.LAZY);
-        productFilterText.addValueChangeListener(e -> updateProductGrid());
+        productFilterText.addValueChangeListener(e -> filterProduct());
         productActionButtonsLayout.add(productFilterText);
 
         // New button
@@ -296,6 +343,7 @@ public class MainView extends VerticalLayout {
 
         // Init grid
         initSupplierGrid();
+
         initProductGrid();
         mainLayout.add(supplierVerticalLayout);
 
@@ -313,8 +361,8 @@ public class MainView extends VerticalLayout {
         supplierGrid.addColumn(
                                 dateOfBirth -> {
                                     LocalDate localDate = LocalDate.ofInstant(dateOfBirth.getDateOfBirth().toInstant(),
-                                            ZoneId.systemDefault());
-                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                                                                              ZoneId.systemDefault());
+                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                                     return localDate.format(formatter);
                                 }, "dateOfBirth"
                     ).setHeader(new Html("<b>Birthdate</b>"));
