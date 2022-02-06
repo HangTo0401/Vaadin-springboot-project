@@ -37,11 +37,18 @@ public class CacheService {
      */
     @Scheduled(cron = CRON_TAB_EVERY_MID_NIGHT)
     private void refreshCache() {
-        cacheManager.clearAll();
+        if (this.cacheManager != null) {
+            log.warn("Cleaning all storage cache");
+            this.cacheManager.getCache(CacheName.SUPPLIER_CACHE).removeAll();
+            this.cacheManager.getCache(CacheName.PRODUCT_CACHE).removeAll();
+            this.cacheManager.clearAll();
+        } else {
+            log.warn("Skip cleaning all storage cache");
+        }
     }
 
     public List<Supplier> getAllSuppliersFromCache() {
-        List<Supplier> supplierList = cacheConfig.getAllSuppliersFromCache();
+        List<Supplier> supplierList = this.cacheConfig.getAllSuppliersFromCache();
         return supplierList;
     }
 
