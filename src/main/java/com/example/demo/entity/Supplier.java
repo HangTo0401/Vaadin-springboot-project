@@ -25,28 +25,27 @@ public class Supplier extends AbstractEntity implements Serializable {
     private String name;
 
     @Column(name="firstname")
-//    @NotEmpty(message = "Firstname cannot be null")
+    @NotEmpty(message = "Firstname cannot be null")
     private String firstname;
 
     @Column(name="lastname")
-//    @NotEmpty(message = "Lastname cannot be null")
+    @NotEmpty(message = "Lastname cannot be null")
     private String lastname;
 
     @Column(name="email")
-//    @Email(message = "Email should be valid")
+    @Email(message = "Email should be valid")
     private String email;
 
     @Column(name="address")
-//    @NotEmpty(message = "Address cannot be null")
+    @NotEmpty(message = "Address cannot be null")
     private String address;
 
     @Column(name="date_of_birth")
-//    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-//    @JsonFormat(pattern = "MM/dd/yyyy")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private Date dateOfBirth;
 
     @Column(name="phone_number")
-//    @NotEmpty(message = "Phone number cannot be null")
+    @NotEmpty(message = "Phone number cannot be null")
     private String phoneNumber;
 
     public String getName() {

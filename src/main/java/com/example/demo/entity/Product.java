@@ -3,6 +3,8 @@ package com.example.demo.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -16,15 +18,19 @@ public class Product extends AbstractEntity implements Serializable {
     private Long id;
 
     @Column(name="firstname")
+    @NotEmpty(message = "Firstname cannot be null")
     private String firstname;
 
     @Column(name="lastname")
+    @NotEmpty(message = "Lastname cannot be null")
     private String lastname;
 
     @Column(name="quantity")
+    @NotNull(message = "Quantity cannot be null")
     private Integer quantity;
 
     @Column(name="price")
+    @NotNull(message = "Price cannot be null")
     private Double price;
 
     // Children
