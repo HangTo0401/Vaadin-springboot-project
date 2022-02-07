@@ -2,6 +2,7 @@ package com.example.demo.cache;
 
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SupplierRepository;
 
@@ -184,7 +185,7 @@ public class CacheConfig {
             // Get record from db
             if (!action.equals("DELETE")) {
                 supplierEntry = supplierRepository.findById(supplier.getId())
-                                                  .orElseThrow(() -> new RuntimeException("Supplier not found"));
+                                                  .orElseThrow(() -> new NotFoundException("Supplier not found"));
                 if (action.equals("ADD")) {
                     // Add new record to cache
                     responseMessage = addNewSupplierToCache(supplierEntry);
@@ -214,7 +215,7 @@ public class CacheConfig {
             if (supplier != null) {
                 log.info("New supplier in cache: " + new Element(supplier.getId(), supplier));
                 supplierCache.put(new Element(supplier.getId(), supplier));
-                message = "New supplier is added to cache successfully!";
+                message = "New supplier is added successfully!";
             } else {
                 log.info("New supplier is invalid!");
                 message = "New supplier is invalid!";
@@ -241,7 +242,7 @@ public class CacheConfig {
                                                                 .orElse(null); // If not found, return null
                 log.info("Exist supplier in cache: " + new Element(existSupplier.getId(), existSupplier));
                 supplierCache.put(new Element(existSupplier.getId(), existSupplier));
-                message = "Exist supplier is updated in cache successfully!";
+                message = "Exist supplier is updated successfully!";
             } else {
                 log.info("Exist supplier which is updated is invalid!");
                 message = "Exist supplier which is updated is invalid!";
@@ -305,7 +306,7 @@ public class CacheConfig {
             if (!action.equals("DELETE")) {
                 // Get record from db
                 productEntry = productRepository.findById(product.getId())
-                        .orElseThrow(() -> new RuntimeException("Product not found"));
+                                                .orElseThrow(() -> new NotFoundException("Product not found"));
 
                 if (action.equals("ADD")) {
                     // Add new record to cache
@@ -336,7 +337,7 @@ public class CacheConfig {
             if (product != null) {
                 log.info("New product in cache: " + new Element(product.getId(), product));
                 productCache.put(new Element(product.getId(), product));
-                message = "New product is added to cache successfully!";
+                message = "New product is added successfully!";
             } else {
                 log.info("New product is invalid!");
                 message = "New product is invalid!";
@@ -363,7 +364,7 @@ public class CacheConfig {
                                                             .orElse(null); // If not found, return null
                 log.info("Exist product in cache: " + new Element(existProduct.getId(), existProduct));
                 productCache.put(new Element(existProduct.getId(), existProduct));
-                message = "Exist product is updated in cache successfully!";
+                message = "Exist product is updated successfully!";
             } else {
                 log.info("Exist product which is updated is invalid!");
                 message = "Exist product which is updated is invalid!";
@@ -386,7 +387,7 @@ public class CacheConfig {
             if (deleteProduct.getId() != null) {
                 log.info("Delete product in cache: " + new Element(deleteProduct.getId(), deleteProduct));
                 boolean deletedFlag = productCache.remove(deleteProduct.getId());
-                message = deletedFlag ? "Product is deleted in cache successfully!" : "Fail to delete product in cache";
+                message = deletedFlag ? "Product is deleted successfully!" : "Fail to delete product";
             } else {
                 log.info("Delete product is invalid!");
                 message = "Delete product is invalid!";
