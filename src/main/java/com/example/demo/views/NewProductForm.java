@@ -286,6 +286,6 @@ public class NewProductForm extends FormLayout {
      * Update Product grid
      */
     private void updateProductGrid() {
-        grid.setItems(service.getAllProductsFromCache(""));
+        grid.setItems(service.getAllProductsFromCache());
     }
 }

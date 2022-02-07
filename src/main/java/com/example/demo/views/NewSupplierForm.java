@@ -293,6 +293,6 @@ public class NewSupplierForm extends FormLayout {
      * Update Supplier grid
      */
     private void updateSupplierGrid() {
-        grid.setItems(suppliersList);
+        grid.setItems(service.getAllSuppliersFromCache());
     }
 }
