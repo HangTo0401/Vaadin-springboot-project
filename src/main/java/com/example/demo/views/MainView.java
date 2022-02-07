@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -403,7 +404,7 @@ public class MainView extends VerticalLayout {
         productGrid.addColumn(Product::getProductName).setSortable(true).setHeader(new Html("<b>Product Name</b>"));
         productGrid.addColumn(Product::getQuantity).setSortable(true).setHeader(new Html("<b>Quantity</b>"));
         productGrid.addColumn(new NumberRenderer<>(Product::getPrice, "$%(,.2f", Locale.US, "$0.00")).setSortable(true).setHeader(new Html("<b>Price</b>"));
-        productGrid.addColumn(Product::getSupplierName).setSortable(true).setHeader(new Html("<b>Supplier Name</b>"));
+        productGrid.addColumn(Product::getSupplierName).setComparator(Comparator.comparing(Product::getSupplierName)).setSortable(true).setHeader(new Html("<b>Supplier Name</b>"));
 
         productGrid.addColumn(new ComponentRenderer<>(product -> {
             // Button for editing person to backend

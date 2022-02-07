@@ -26,7 +26,6 @@ public class MainController {
     public ResponseEntity<?> getSuppliers() {
         // This returns a JSON or XML with the users
         List<Supplier> supplierList = supplierRepository.findAll();
-//        List<Supplier> supplierList = Arrays.asList(new Supplier(1, "Cuong", "phan", Date.valueOf("1984-05-10"), "cuong.phan@axonactive.com", "0906678806", "Tân Bình HCM"));
         return ResponseEntity.ok().body(supplierRepository.findAll());
     }
 
