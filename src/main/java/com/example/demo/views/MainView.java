@@ -95,16 +95,16 @@ public class MainView extends VerticalLayout {
                                                     supplierGrid,
                                                     service,
                                                     cacheService,
-                                                    service.getAllProductsFromCache(""),
-                                                    service.getAllSuppliersFromCache(""));
+                                                    service.getAllProductsFromCache(),
+                                                    service.getAllSuppliersFromCache());
         supplierDetailForm.setWidth("25em");
 
         productDetailForm = new ProductDetailForm(productDetailDialog,
                                                   productGrid,
                                                   service,
                                                   cacheService,
-                                                  service.getAllProductsFromCache(""),
-                                                  service.getAllSuppliersFromCache(""));
+                                                  service.getAllProductsFromCache(),
+                                                  service.getAllSuppliersFromCache());
         productDetailForm.setWidth("25em");
     }
 
@@ -138,8 +138,8 @@ public class MainView extends VerticalLayout {
                                                   supplierGrid,
                                                   service,
                                                   cacheService,
-                                                  service.getAllProductsFromCache(""),
-                                                  service.getAllSuppliersFromCache(""));
+                                                  service.getAllProductsFromCache(),
+                                                  service.getAllSuppliersFromCache());
             newSupplierForm.setWidth("25em");
             newSupplierForm.setId("new-supplier-form");
             newSupplierDialog.add(newSupplierForm);
@@ -160,8 +160,8 @@ public class MainView extends VerticalLayout {
                                                 productGrid,
                                                 service,
                                                 cacheService,
-                                                service.getAllProductsFromCache(""),
-                                                service.getAllSuppliersFromCache(""));
+                                                service.getAllProductsFromCache(),
+                                                service.getAllSuppliersFromCache());
             newProductForm.setWidth("25em");
             newProductDialog.add(newProductForm);
             newProductDialog.open();
@@ -199,7 +199,7 @@ public class MainView extends VerticalLayout {
      */
     public void filterSupplier() {
         if (supplierFilterText.getValue() != null) {
-            listSuppliers = service.getAllSuppliersFromCache("");
+            listSuppliers = service.getAllSuppliersFromCache();
             listSupplierDataProvider = DataProvider.ofCollection(listSuppliers);
 
             listSupplierDataProvider.addFilter(supplier ->
@@ -219,7 +219,7 @@ public class MainView extends VerticalLayout {
      * Update Supplier grid
      */
     private void updateSupplierGrid() {
-        supplierGrid.setItems(service.getAllSuppliersFromCache(supplierFilterText.getValue()));
+        supplierGrid.setItems(service.getAllSuppliersFromCache());
     }
 
     /**
@@ -227,7 +227,7 @@ public class MainView extends VerticalLayout {
      */
     public void filterProduct() {
         if (productFilterText.getValue() != null) {
-            listProducts = service.getAllProductsFromCache("");
+            listProducts = service.getAllProductsFromCache();
             listProductDataProvider = DataProvider.ofCollection(listProducts);
 
             listProductDataProvider.setFilter(product ->
@@ -252,7 +252,7 @@ public class MainView extends VerticalLayout {
      * Update Product grid
      */
     private void updateProductGrid() {
-        productGrid.setItems(service.getAllProductsFromCache(productFilterText.getValue()));
+        productGrid.setItems(service.getAllProductsFromCache());
     }
 
     /**
@@ -354,10 +354,10 @@ public class MainView extends VerticalLayout {
     private void initSupplierGrid() {
         supplierGrid.addClassNames("supplier-grid");
 
-        listSuppliers = service.getAllSuppliersFromCache("");
+        listSuppliers = service.getAllSuppliersFromCache();
         listSupplierDataProvider = DataProvider.ofCollection(listSuppliers);
 
-        supplierGrid.addColumn(Supplier::getName).setHeader(new Html("<b>Name</b>"));
+        supplierGrid.addColumn(Supplier::getName).setSortable(true).setHeader(new Html("<b>Name</b>"));
         supplierGrid.addColumn(
                                 dateOfBirth -> {
                                     LocalDate localDate = LocalDate.ofInstant(dateOfBirth.getDateOfBirth().toInstant(),
@@ -365,10 +365,10 @@ public class MainView extends VerticalLayout {
                                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                                     return localDate.format(formatter);
                                 }, "dateOfBirth"
-                    ).setHeader(new Html("<b>Birthdate</b>"));
-        supplierGrid.addColumn(Supplier::getEmail).setHeader(new Html("<b>Email</b>"));
-        supplierGrid.addColumn(Supplier::getPhoneNumber).setHeader(new Html("<b>Phone Number</b>"));
-        supplierGrid.addColumn(Supplier::getAddress).setHeader(new Html("<b>Address</b>"));
+                    ).setSortable(true).setHeader(new Html("<b>Birthdate</b>"));
+        supplierGrid.addColumn(Supplier::getEmail).setSortable(true).setHeader(new Html("<b>Email</b>"));
+        supplierGrid.addColumn(Supplier::getPhoneNumber).setSortable(true).setHeader(new Html("<b>Phone Number</b>"));
+        supplierGrid.addColumn(Supplier::getAddress).setSortable(true).setHeader(new Html("<b>Address</b>"));
 
         supplierGrid.addColumn(new ComponentRenderer<>(supplier -> {
                         // Button for editing supplier and update to database and cache
@@ -397,13 +397,13 @@ public class MainView extends VerticalLayout {
     private void initProductGrid() {
         productGrid.addClassNames("product-grid");
 
-        listProducts = service.getAllProductsFromCache("");
+        listProducts = service.getAllProductsFromCache();
         listProductDataProvider = DataProvider.ofCollection(listProducts);
 
-        productGrid.addColumn(Product::getProductName).setHeader(new Html("<b>Product Name</b>"));
-        productGrid.addColumn(Product::getQuantity).setHeader(new Html("<b>Quantity</b>"));
-        productGrid.addColumn(new NumberRenderer<>(Product::getPrice, "$%(,.2f", Locale.US, "$0.00")).setHeader(new Html("<b>Price</b>"));
-        productGrid.addColumn(Product::getSupplierName).setHeader(new Html("<b>Supplier Name</b>"));
+        productGrid.addColumn(Product::getProductName).setSortable(true).setHeader(new Html("<b>Product Name</b>"));
+        productGrid.addColumn(Product::getQuantity).setSortable(true).setHeader(new Html("<b>Quantity</b>"));
+        productGrid.addColumn(new NumberRenderer<>(Product::getPrice, "$%(,.2f", Locale.US, "$0.00")).setSortable(true).setHeader(new Html("<b>Price</b>"));
+        productGrid.addColumn(Product::getSupplierName).setSortable(true).setHeader(new Html("<b>Supplier Name</b>"));
 
         productGrid.addColumn(new ComponentRenderer<>(product -> {
             // Button for editing person to backend

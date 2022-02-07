@@ -1,13 +1,8 @@
 package com.example.demo.dto;
 
 import com.example.demo.entity.Product;
-import com.example.demo.entity.Supplier;
-import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import lombok.Data;
 
 @Data
 public class ProductDTO {

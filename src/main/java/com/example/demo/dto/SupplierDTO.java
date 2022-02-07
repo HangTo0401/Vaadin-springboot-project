@@ -1,9 +1,9 @@
 package com.example.demo.dto;
 
 import com.example.demo.entity.Supplier;
+
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.util.Date;
 
 @Data

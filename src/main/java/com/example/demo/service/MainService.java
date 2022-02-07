@@ -34,19 +34,19 @@ public class MainService {
 
     /**
      * Get all suppliers from cache
-     * @param stringFilter
      * */
-    public List<Supplier> getAllSuppliersFromCache(String stringFilter) {
+    public List<Supplier> getAllSuppliersFromCache() {
         log.info("Find all suppliers and put in cache");
         List<Supplier> supplierList = new ArrayList<>();
 
         try {
-            if (stringFilter == null || stringFilter.isEmpty()) {
+//            if (stringFilter == null || stringFilter.isEmpty()) {
                 log.info("Load data from cache " + CacheName.SUPPLIER_CACHE);
                 supplierList = cacheService.getAllSuppliersFromCache();
-            } else {
-                supplierList = supplierRepository.search(stringFilter);
-            }
+//            }
+//            else {
+//                supplierList = supplierRepository.search(stringFilter);
+//            }
         } catch (Exception ex) {
             ex.printStackTrace();
             log.error("Could not create supplier");
@@ -128,22 +128,16 @@ public class MainService {
     }
 
     /**
-     * Get all products
-     * @param stringFilter
+     * Get all products from cache
      * */
-    public List<Product> getAllProductsFromCache(String stringFilter) {
+    public List<Product> getAllProductsFromCache() {
         log.info("Find all products and put in cache");
         List<Product> productList = new ArrayList<>();
 
         try {
-            if (stringFilter == null || stringFilter.isEmpty()) {
-                log.info("Load data from cache " + CacheName.PRODUCT_CACHE);
-                productList = cacheService.getAllProductsFromCache();
-                return productList;
-            } else {
-                productList = productRepository.search(stringFilter);
-                return productList;
-            }
+            log.info("Load data from cache " + CacheName.PRODUCT_CACHE);
+            productList = cacheService.getAllProductsFromCache();
+            return productList;
         } catch (Exception ex) {
             ex.printStackTrace();
         }
