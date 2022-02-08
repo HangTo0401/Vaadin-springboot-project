@@ -2,19 +2,22 @@
 <ehcache>
     <diskStore path="java.io.tmpdir"/>
     <defaultCache maxEntriesLocalHeap="1000000" eternal="true">
+    <!-- localTempSwap persistence strategy allows the cache to use the local disk during cache operation.
+    The disk storage is temporary and is cleared after a restart.-->
         <persistence strategy="localTempSwap"/>
     </defaultCache>
 
-    <cache name="supplierCache" maxEntriesLocalHeap="0">
-        <searchable>
-            <searchAttribute name="id"/>
-        </searchable>
+    <!-- Overflows automatically to off-heap and disk because no specific override and resources are set at the CacheManager level -->
+    <cache name="supplierCache" maxEntriesLocalHeap="1000">
+<!--        Attributes may also be defined using a JavaBean style.
+            Often keys or values will not be directly searchable and instead you will need to extract searchable attributes from the keys or values
+            With the following attribute declaration-->
+<!--        a public method getId() will be expected to be found on either the key or value for cache elements-->
+        <searchable></searchable>
     </cache>
 
-    <cache name="productCache" maxEntriesLocalHeap="0">
-        <searchable>
-            <searchAttribute name="id"/>
-        </searchable>
+    <cache name="productCache" maxEntriesLocalHeap="1000">
+        <searchable></searchable>
     </cache>
 
 </ehcache>
