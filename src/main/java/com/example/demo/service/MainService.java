@@ -5,6 +5,7 @@ import com.example.demo.cache.CacheName;
 import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SupplierRepository;
 
@@ -66,8 +67,7 @@ public class MainService {
 
         try {
             if (supplier == null) {
-                System.err.println("Supplier is null!");
-                return null;
+                throw new NotFoundException("Supplier is null!");
             }
             newSupplier = supplierRepository.save(supplier);
         } catch (Exception ex) {
@@ -122,8 +122,7 @@ public class MainService {
 
         try {
             if (supplier == null) {
-                System.err.println("Supplier is null!");
-                return null;
+                throw new NotFoundException("Supplier is null!");
             }
             updateSupplier = supplierRepository.save(supplier);
         } catch (Exception ex) {
@@ -161,8 +160,7 @@ public class MainService {
 
         try {
             if (product == null) {
-                System.err.println("Product is null!");
-                return null;
+                throw new NotFoundException("Product is null!");
             }
             newProduct = productRepository.save(product);
         } catch(Exception ex) {
@@ -216,8 +214,7 @@ public class MainService {
 
         try {
             if (product == null) {
-                System.err.println("Product is null!");
-                return null;
+                throw new NotFoundException("Product is null!");
             }
             updateProduct = productRepository.save(product);
         } catch (Exception ex) {
