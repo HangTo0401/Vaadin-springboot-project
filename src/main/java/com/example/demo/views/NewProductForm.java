@@ -152,12 +152,17 @@ public class NewProductForm extends FormLayout {
             binder.validate();
         });
         save.addClickShortcut(Key.ENTER);
+        save.setEnabled(false);
 
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         cancel.addClickShortcut(Key.ESCAPE);
         cancel.addClickListener(e -> fireEvent(new NewProductForm.CloseEvent(this)));
 
-        binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
+        binder.addStatusChangeListener(event -> {
+            if (binder.isValid()) {
+                save.setEnabled(true);
+            }
+        });
 
         return new HorizontalLayout(save, cancel);
     }

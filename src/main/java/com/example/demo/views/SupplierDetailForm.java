@@ -165,7 +165,13 @@ public class SupplierDetailForm extends FormLayout {
         cancel.addClickShortcut(Key.ESCAPE);
         cancel.addClickListener(e -> fireEvent(new SupplierDetailForm.CloseEvent(this)));
 
-        binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
+        binder.addStatusChangeListener(event -> {
+            if (binder.hasChanges()) {
+                save.setEnabled(true);
+            } else {
+                save.setEnabled(false);
+            }
+        });
 
         return new HorizontalLayout(save, cancel);
     }
@@ -186,7 +192,7 @@ public class SupplierDetailForm extends FormLayout {
         // Firstname
         binder.forField(firstname).asRequired("Required")
               .withValidator(firstname -> !firstname.isBlank() && !firstname.isEmpty(), "Firstname is required field!")
-              .withValidator(firstname -> firstname.length() >= 4, "Firstname must contain at least 4 characters")
+              .withValidator(firstname -> firstname.length() >= 3, "Firstname must contain at least 3 characters")
               .withValidator(firstname -> StringUtils.isAlphaSpace(firstname), "Firstname must be a string")
               .bind(Supplier::getFirstname, Supplier::setFirstname);
 

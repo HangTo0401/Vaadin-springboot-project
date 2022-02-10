@@ -163,7 +163,13 @@ public class ProductDetailForm extends FormLayout {
         cancel.addClickShortcut(Key.ESCAPE);
         cancel.addClickListener(e -> fireEvent(new ProductDetailForm.CloseEvent(this)));
 
-        binder.addStatusChangeListener(event -> save.setEnabled(binder.isValid()));
+        binder.addStatusChangeListener(event -> {
+            if (binder.hasChanges()) {
+                save.setEnabled(true);
+            } else {
+                save.setEnabled(false);
+            }
+        });
 
         return new HorizontalLayout(save, cancel);
     }
