@@ -2,8 +2,8 @@ package com.example.demo.views;
 
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
+
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;

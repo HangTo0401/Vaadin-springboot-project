@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.cache.CacheConfig;
 import com.example.demo.cache.CacheName;
 import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 @Service
 public class MainService {
+
     @Autowired
     private SupplierRepository supplierRepository;
 
@@ -30,6 +32,9 @@ public class MainService {
 
     @Autowired
     private CacheService cacheService;
+
+    @Autowired
+    private CacheConfig cacheConfig;
 
     private static Logger log = LoggerFactory.getLogger(MainService.class);
 

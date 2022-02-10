@@ -2,7 +2,6 @@ package com.example.demo.cache;
 
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
-import com.example.demo.exception.NotFoundException;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.SupplierRepository;
 
@@ -11,9 +10,6 @@ import lombok.Getter;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
-import net.sf.ehcache.search.Query;
-import net.sf.ehcache.search.Result;
-import net.sf.ehcache.search.Results;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +21,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.annotation.PreDestroy;
 import java.net.URL;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @EnableCaching //annotation enables the Spring Boot caching abstraction layer in our application.
 @Configuration //annotation marks the CacheConfig class as a Spring configuration class.
