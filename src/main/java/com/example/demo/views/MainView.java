@@ -14,6 +14,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -135,6 +136,13 @@ public class MainView extends VerticalLayout {
     }
 
     private void setLayoutContent(String layoutName) {
+        // Header
+        Label projectTitle = new Label("Welcome to Vaadin project");
+        projectTitle.getElement().getStyle().set("color", "red");
+        projectTitle.getElement().getStyle().set("fontWeight", "bold");
+        projectTitle.getElement().getStyle().set("fontSize", "20px");
+        mainLayout.add(projectTitle);
+
         // Create buttons
         createButtons(buttonsName);
 
