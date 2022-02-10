@@ -42,7 +42,6 @@ public class CacheConfig {
     private ProductRepository productRepository;
 
     public CacheConfig(SupplierRepository supplierRepository, ProductRepository productRepository) {
-        super();
         this.supplierRepository = supplierRepository;
         this.productRepository = productRepository;
         init();
