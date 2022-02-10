@@ -53,7 +53,7 @@ public class SupplierDetailForm extends FormLayout {
 
     private boolean isUpdatedSuccess = false;
 
-    // Other fields omitted
+    // Creates a new binder that uses reflection based on the provided bean type to resolve bean properties.
     Binder<Supplier> binder = new BeanValidationBinder<>(Supplier.class);
 
     H2 headline = new H2("Supplier Detail Form");

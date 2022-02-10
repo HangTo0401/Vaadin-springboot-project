@@ -1,10 +1,10 @@
 package com.example.demo.views;
 
-import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
-
 import com.example.demo.service.MainService;
+import com.example.demo.cache.CacheService;
+
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -18,19 +18,24 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
+
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.converter.LocalDateToDateConverter;
 import com.vaadin.flow.data.validator.RegexpValidator;
+
 import com.vaadin.flow.shared.Registration;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 
 import java.sql.Date;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+
 import java.util.List;
 
 public class NewSupplierForm extends FormLayout {
@@ -62,6 +67,7 @@ public class NewSupplierForm extends FormLayout {
     Button save = new Button("Save");
     Button cancel = new Button("Cancel");
 
+    // Creates a new binder that uses reflection based on the provided bean type to resolve bean properties.
     Binder<Supplier> binder = new BeanValidationBinder<>(Supplier.class);
 
     public NewSupplierForm(Dialog dialog,

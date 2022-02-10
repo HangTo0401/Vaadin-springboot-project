@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ehcache>
     <diskStore path="java.io.tmpdir"/>
-    <defaultCache maxEntriesLocalHeap="1000000" eternal="true">
-    <!-- localTempSwap persistence strategy allows the cache to use the local disk during cache operation.
-    The disk storage is temporary and is cleared after a restart.-->
+    <defaultCache eternal="true"
+                  maxEntriesLocalHeap="1000000"
+                  overflowToDisk="false"
+                  timeToLiveSeconds="1200">
+        <!-- localTempSwap persistence strategy allows the cache to use the local disk during cache operation.
+        The disk storage is temporary and is cleared after a restart.-->
         <persistence strategy="localTempSwap"/>
     </defaultCache>
 
@@ -12,7 +15,6 @@
 <!--        Attributes may also be defined using a JavaBean style.
             Often keys or values will not be directly searchable and instead you will need to extract searchable attributes from the keys or values
             With the following attribute declaration-->
-<!--        a public method getId() will be expected to be found on either the key or value for cache elements-->
         <searchable></searchable>
     </cache>
 

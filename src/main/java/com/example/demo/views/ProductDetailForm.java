@@ -4,6 +4,7 @@ import com.example.demo.cache.CacheService;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.Supplier;
 import com.example.demo.service.MainService;
+
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
@@ -16,12 +17,16 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.binder.BeanValidationBinder;
+
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
+
 import com.vaadin.flow.shared.Registration;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -43,7 +48,7 @@ public class ProductDetailForm extends FormLayout {
 
     private boolean isUpdatedSuccess = false;
 
-    // Other fields omitted
+    // Creates a new binder that uses reflection based on the provided bean type to resolve bean properties.
     Binder<Product> binder = new BeanValidationBinder<>(Product.class);
 
     H2 headline = new H2("Product Detail Form");

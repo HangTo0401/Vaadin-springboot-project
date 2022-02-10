@@ -1,17 +1,20 @@
 package com.example.demo.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+
 import java.io.Serializable;
-import java.util.ArrayList;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.ArrayList;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Entity
 @Table(name = "supplier", schema = "demo_db")

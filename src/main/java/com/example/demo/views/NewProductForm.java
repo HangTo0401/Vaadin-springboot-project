@@ -49,7 +49,7 @@ public class NewProductForm extends FormLayout {
 
     private boolean isSavedSuccess = false;
 
-    // Other fields omitted
+    // Creates a new binder that uses reflection based on the provided bean type to resolve bean properties.
     Binder<Product> binder = new BeanValidationBinder<>(Product.class);
 
     H2 headline = new H2("Product");

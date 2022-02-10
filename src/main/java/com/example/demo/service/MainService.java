@@ -12,8 +12,9 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,19 +35,15 @@ public class MainService {
 
     /**
      * Get all suppliers from cache
+     * @return List<Supplier>
      * */
     public List<Supplier> getAllSuppliersFromCache() {
         log.info("Find all suppliers and put in cache");
         List<Supplier> supplierList = new ArrayList<>();
 
         try {
-//            if (stringFilter == null || stringFilter.isEmpty()) {
-                log.info("Load data from cache " + CacheName.SUPPLIER_CACHE);
-                supplierList = cacheService.getAllSuppliersFromCache();
-//            }
-//            else {
-//                supplierList = supplierRepository.search(stringFilter);
-//            }
+            log.info("Load data from cache " + CacheName.SUPPLIER_CACHE);
+            supplierList = cacheService.getAllSuppliersFromCache();
         } catch (Exception ex) {
             ex.printStackTrace();
             log.error("Could not create supplier");
@@ -57,6 +54,7 @@ public class MainService {
     /**
      * Create supplier
      * @param supplier
+     * @return Supplier
      * */
     public Supplier createSupplier(Supplier supplier) {
         Supplier newSupplier = null;
@@ -77,6 +75,7 @@ public class MainService {
     /**
      * Get supplier by id
      * @param id
+     * @return Supplier
      * */
     public Supplier getSupplierById(Long id) {
         try {
@@ -93,6 +92,7 @@ public class MainService {
     /**
      * Delete supplier by id
      * @param id
+     * @return boolean
      * */
     public boolean deleteSupplierById(Long id) {
         boolean isFound = false;
@@ -110,6 +110,7 @@ public class MainService {
     /**
      * Update supplier
      * @param supplier
+     * @return Supplier
      * */
     public Supplier updateSupplier(Supplier supplier) {
         Supplier updateSupplier = null;
@@ -129,6 +130,7 @@ public class MainService {
 
     /**
      * Get all products from cache
+     * @return List<Product>
      * */
     public List<Product> getAllProductsFromCache() {
         log.info("Find all products and put in cache");
@@ -147,6 +149,7 @@ public class MainService {
     /**
      * Create product
      * @param product
+     * @return Product
      * */
     public Product createProduct(Product product) {
         Product newProduct = null;
@@ -166,6 +169,7 @@ public class MainService {
     /**
      * Get product by id
      * @param productId
+     * @return Product
      * */
     public Product getProductById(Long productId) {
         try {
@@ -182,6 +186,7 @@ public class MainService {
     /**
      * Delete product by id
      * @param id
+     * @return boolean
      * */
     public boolean deleteProductById(Long id) {
         boolean isFound = false;
@@ -199,6 +204,7 @@ public class MainService {
     /**
      * Update product
      * @param product
+     * @return Product
      * */
     public Product updateProduct(Product product) {
         Product updateProduct = null;

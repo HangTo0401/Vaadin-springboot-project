@@ -47,33 +47,62 @@ public class CacheService {
         }
     }
 
+    /**
+     * Get all entries in supplier cache
+     * @return List<Supplier>
+     */
     public List<Supplier> getAllSuppliersFromCache() {
         List<Supplier> supplierList = this.cacheConfig.getAllSuppliersFromCache();
         return supplierList;
     }
 
+    /**
+     * Get entry by key in supplier cache
+     * @param id
+     * @return Supplier
+     */
     public Supplier getSupplierByKeyFromCache(Long id) {
         Cache supplierCache = cacheManager.getCache(CacheName.SUPPLIER_CACHE);
         Element element = supplierCache.get(id);
         return element != null ? (Supplier) element.getObjectValue() : null;
     }
 
+    /**
+     * Reload entries in supplier cache
+     * @param action
+     * @param supplier
+     * @return String
+     */
     public String reloadSupplierCache(String action, Supplier supplier) {
         String message = cacheConfig.reloadSupplierCache(action, supplier);
         return message;
     }
 
+    /**
+     * Get all entries in product cache
+     */
     public List<Product> getAllProductsFromCache() {
         List<Product> productList = cacheConfig.getAllProductsFromCache();
         return productList;
     }
 
+    /**
+     * Get entry by key in product cache
+     * @param id
+     * @return Product
+     */
     public Product getProductByKeyFromCache(Long id) {
         Cache productCache = cacheManager.getCache(CacheName.PRODUCT_CACHE);
         Element element = productCache.get(id);
         return element != null ? (Product) element.getObjectValue() : null;
     }
 
+    /**
+     * Get entry by key in product cache
+     * @param action
+     * @param product
+     * @return String
+     */
     public String reloadProductCache(String action, Product product) {
         String message = cacheConfig.reloadProductCache(action, product);
         return message;

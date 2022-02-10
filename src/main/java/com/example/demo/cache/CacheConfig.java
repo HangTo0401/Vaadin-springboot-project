@@ -12,12 +12,16 @@ import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.search.Query;
+import net.sf.ehcache.search.Result;
+import net.sf.ehcache.search.Results;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
+
+import java.net.URL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +55,9 @@ public class CacheConfig {
     }
 
     private void init() {
-        // Get config from ehcache.xml
-        cacheManager = CacheManager.newInstance(getClass().getResource("/ehcache.xml"));
+        // Create CacheManager from a configuration resource in the classpath by getting config from ehcache.xml
+        URL url = getClass().getResource("/ehcache.xml");
+        cacheManager = CacheManager.newInstance(url);
         CacheManager.create();
 
         supplierCache = cacheManager.getCache(CacheName.SUPPLIER_CACHE);
@@ -102,17 +107,29 @@ public class CacheConfig {
 
     /**
      * Get all suppliers from cache
+     * @return List<Supplier>
      * */
     public List<Supplier> getAllSuppliersFromCache() {
         log.info("Get all suppliers from cache");
         try {
+            // Create a new query builder for this cache
             Query supplierCacheQuery = supplierCache.createQuery();
 
-            // Get list supplier from cache
-            supplierList = supplierCacheQuery.includeValues()
-                                             .execute().all()
-                                             .stream().map(result -> (Supplier) result.getValue()).collect(Collectors.toList());
+            // Return all element values from cache
+            supplierCacheQuery.includeValues();
 
+            // If too many results are returned, it could cause an OutOfMemoryError.
+            // The maxResults clause is used to limit the number of results returned from the search.
+            supplierCacheQuery.maxResults(1000);
+
+            // Execute this query. Every call to this method will re-execute the query and return a distinct results object.
+            Results results = supplierCacheQuery.execute();
+
+            // List containing all the search results
+            List<Result> all = results.all();
+
+            // Convert list result to supplier list
+            supplierList = all.stream().map(result -> (Supplier) result.getValue()).collect(Collectors.toList());
             supplierList.stream().forEach(System.out::println);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -122,16 +139,29 @@ public class CacheConfig {
 
     /**
      * Get all products from cache
+     * @return List<Product>
      * */
     public List<Product> getAllProductsFromCache() {
         log.info("Get all products from cache");
         try {
+            // Create a new query builder for this cache
             Query productCacheQuery = productCache.createQuery();
 
-            // Get list supplier from cache
-            productList = productCacheQuery.includeValues()
-                                            .execute().all()
-                                            .stream().map(result -> (Product) result.getValue()).collect(Collectors.toList());
+            // Return all element values from cache
+            productCacheQuery.includeValues();
+
+            // If too many results are returned, it could cause an OutOfMemoryError.
+            // The maxResults clause is used to limit the number of results returned from the search.
+            productCacheQuery.maxResults(1000);
+
+            // Execute this query. Every call to this method will re-execute the query and return a distinct results object.
+            Results results = productCacheQuery.execute();
+
+            // List containing all the search results
+            List<Result> all = results.all();
+
+            // Convert list result to product list
+            productList = all.stream().map(result -> (Product) result.getValue()).collect(Collectors.toList());
             productList.forEach(System.out::println);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -142,9 +172,10 @@ public class CacheConfig {
     /**
      * Search supplier by id from cache
      * @param id
+     * @return Supplier
      * */
     public Supplier getSupplierByIdFromCache(Long id) {
-        log.info("Get supplier from cache");
+        log.info("Get supplier from cache by id");
         Element element = null;
 
         try {
@@ -158,9 +189,10 @@ public class CacheConfig {
     /**
      * Search product by id from cache
      * @param id
+     * @return Product
      * */
     public Product getProductByIdFromCache(Long id) {
-        log.info("Get product from cache");
+        log.info("Get product from cache by id");
         Element element = null;
 
         try {
@@ -175,6 +207,7 @@ public class CacheConfig {
      * Reload data in supplier cache
      * @param action
      * @param supplier
+     * @return String
      * */
     public String reloadSupplierCache(String action, Supplier supplier) {
         log.info("Reload data in cache " + CacheName.SUPPLIER_CACHE);
@@ -206,6 +239,7 @@ public class CacheConfig {
     /**
      * Add new supplier to cache
      * @param supplier
+     * @return String
      * */
     public String addNewSupplierToCache(Supplier supplier) {
         log.info("Add new supplier in cache");
@@ -229,6 +263,7 @@ public class CacheConfig {
     /**
      * Update supplier in cache
      * @param updateId
+     * @return String
      * */
     public String updateSupplierInCache(Long updateId) {
         log.info("Update supplier in cache");
@@ -236,10 +271,7 @@ public class CacheConfig {
 
         try {
             if (updateId != null) {
-                Supplier existSupplier = (Supplier) supplierList.stream()
-                                                                .filter(supplier -> supplier.getId() == updateId)
-                                                                .findAny() // If 'findAny' then return found
-                                                                .orElse(null); // If not found, return null
+                Supplier existSupplier = getSupplierByIdFromCache(updateId);
                 log.info("Exist supplier in cache: " + new Element(existSupplier.getId(), existSupplier));
                 supplierCache.put(new Element(existSupplier.getId(), existSupplier));
                 message = "Exist supplier is updated successfully!";
@@ -256,6 +288,7 @@ public class CacheConfig {
     /**
      * Delete supplier in cache
      * @param deleteSupplier
+     * @return String
      * */
     public String deleteSupplierInCache(Supplier deleteSupplier) {
         log.info("Delete supplier in cache");
@@ -296,6 +329,7 @@ public class CacheConfig {
      * Reload data in product cache
      * @param action
      * @param product
+     * @return String
      * */
     public String reloadProductCache(String action, Product product) {
         log.info("Reload data in cache " + CacheName.PRODUCT_CACHE);
@@ -328,6 +362,7 @@ public class CacheConfig {
     /**
      * Add new product to cache
      * @param product
+     * @return String
      * */
     public String addNewProductToCache(Product product) {
         log.info("Add new product in cache:");
@@ -351,6 +386,7 @@ public class CacheConfig {
     /**
      * Update product in cache
      * @param updateId
+     * @return String
      * */
     public String updateProductInCache(Long updateId) {
         log.info("Update product in cache: ");
@@ -358,10 +394,7 @@ public class CacheConfig {
 
         try {
             if (updateId != null) {
-                Product existProduct = (Product) productList.stream()
-                                                            .filter(supplier -> supplier.getId() == updateId)
-                                                            .findAny() // If 'findAny' then return found
-                                                            .orElse(null); // If not found, return null
+                Product existProduct = getProductByIdFromCache(updateId);
                 log.info("Exist product in cache: " + new Element(existProduct.getId(), existProduct));
                 productCache.put(new Element(existProduct.getId(), existProduct));
                 message = "Exist product is updated successfully!";
@@ -378,6 +411,7 @@ public class CacheConfig {
     /**
      * Delete product in cache
      * @param deleteProduct
+     * @return String
      * */
     public String deleteProductInCache(Product deleteProduct) {
         log.info("Delete product in cache: ");
