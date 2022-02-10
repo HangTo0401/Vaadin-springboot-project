@@ -28,18 +28,16 @@ import com.vaadin.flow.shared.Registration;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class NewProductForm extends FormLayout {
+public class NewProductForm extends FormLayout implements Serializable {
+
     private MainService service;
 
     private CacheService cacheService;
-
-    private List<Product> productsList;
-
-    private List<Supplier> suppliersList;
 
     private Dialog dialog;
 
@@ -67,15 +65,11 @@ public class NewProductForm extends FormLayout {
     public NewProductForm(Dialog dialog,
                           Grid<Product> grid,
                           MainService service,
-                          CacheService cacheService,
-                          List<Product> productsList,
-                          List<Supplier> suppliersList) {
+                          CacheService cacheService) {
         this.dialog = dialog;
         this.grid = grid;
         this.service = service;
         this.cacheService = cacheService;
-        this.productsList = productsList;
-        this.suppliersList = suppliersList;
 
         addClassName("new-product-form");
         setPlaceHolder();
@@ -170,7 +164,7 @@ public class NewProductForm extends FormLayout {
     private void createSupplierComboBox() {
         supplierComboBox.setAllowCustomValue(true);
         ComboBox.ItemFilter<Supplier> filter = (supplier, filterString) -> supplier.getName().toLowerCase().startsWith(filterString.toLowerCase());
-        supplierComboBox.setItems(filter, suppliersList);
+        supplierComboBox.setItems(filter, this.service.getAllSuppliersFromCache());
         supplierComboBox.setItemLabelGenerator(Supplier::getName);
     }
 

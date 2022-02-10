@@ -30,6 +30,7 @@ import com.vaadin.flow.shared.Registration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 
+import java.io.Serializable;
 import java.sql.Date;
 
 import java.time.LocalDate;
@@ -38,14 +39,11 @@ import java.time.format.DateTimeFormatter;
 
 import java.util.List;
 
-public class NewSupplierForm extends FormLayout {
+public class NewSupplierForm extends FormLayout implements Serializable {
+
     private MainService service;
 
     private CacheService cacheService;
-
-    private List<Product> productsList;
-
-    private List<Supplier> suppliersList;
 
     private Dialog dialog;
 
@@ -73,15 +71,11 @@ public class NewSupplierForm extends FormLayout {
     public NewSupplierForm(Dialog dialog,
                            Grid<Supplier> grid,
                            MainService service,
-                           CacheService cacheService,
-                           List<Product> productsList,
-                           List<Supplier> suppliersList) {
+                           CacheService cacheService) {
         this.dialog = dialog;
         this.grid = grid;
         this.service = service;
         this.cacheService = cacheService;
-        this.productsList = productsList;
-        this.suppliersList = suppliersList;
 
         addClassName("new-supplier-form");
         setPlaceHolder();
