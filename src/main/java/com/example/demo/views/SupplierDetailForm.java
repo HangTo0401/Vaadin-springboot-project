@@ -1,7 +1,6 @@
 package com.example.demo.views;
 
-
-import com.example.demo.entity.Product;
+import com.example.demo.cache.CacheName;
 import com.example.demo.entity.Supplier;
 import com.example.demo.service.MainService;
 import com.example.demo.cache.CacheService;
@@ -22,28 +21,29 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.data.validator.RegexpValidator;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.converter.LocalDateToDateConverter;
 
+import com.vaadin.flow.shared.Registration;
+
+import net.sf.ehcache.Cache;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
+
+import java.io.Serializable;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
-public class SupplierDetailForm extends FormLayout {
+public class SupplierDetailForm extends FormLayout implements Serializable {
+
     private MainService service;
 
     private CacheService cacheService;
-
-    private List<Product> productsList;
-
-    private List<Supplier> suppliersList;
 
     private Dialog dialog;
 
@@ -73,15 +73,11 @@ public class SupplierDetailForm extends FormLayout {
     public SupplierDetailForm(Dialog dialog,
                               Grid<Supplier> grid,
                               MainService service,
-                              CacheService cacheService,
-                              List<Product> productsList,
-                              List<Supplier> suppliersList) {
+                              CacheService cacheService) {
         this.dialog = dialog;
         this.grid = grid;
         this.service = service;
         this.cacheService = cacheService;
-        this.productsList = productsList;
-        this.suppliersList = suppliersList;
 
         addClassName("supplier-detail-form");
         setPlaceHolder();
