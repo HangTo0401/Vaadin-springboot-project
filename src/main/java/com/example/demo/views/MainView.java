@@ -12,6 +12,7 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -31,9 +32,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,6 +73,9 @@ public class MainView extends VerticalLayout {
 
     private SupplierDetailForm supplierDetailForm;
     private ProductDetailForm productDetailForm;
+
+    private static final String TITLE_CONFIRM_DIALOG = "Confirm Dialog";
+    private static final String CONTENT_CONFIRM_DIALOG = "Do you want to delete this record?";
 
     @Autowired
     private MainService service;
@@ -173,7 +175,7 @@ public class MainView extends VerticalLayout {
     }
 
     private void createSupplierSearchArea() {
-        supplierFilterText.setPlaceholder("Search by name, birthdate, email, phone number...");
+        supplierFilterText.setPlaceholder("Search by name, birthdate, email...");
         supplierFilterText.setWidth("25em");
         supplierFilterText.setClearButtonVisible(true);
         supplierFilterText.setValueChangeMode(ValueChangeMode.LAZY);
@@ -204,9 +206,7 @@ public class MainView extends VerticalLayout {
             newSupplierForm = new NewSupplierForm(newSupplierDialog,
                                                   supplierGrid,
                                                   this.service,
-                                                  this.cacheService,
-                                                  this.service.getAllProductsFromCache(),
-                                                  this.service.getAllSuppliersFromCache());
+                                                  this.cacheService);
             newSupplierForm.setWidth("25em");
             newSupplierForm.setId("new-supplier-form");
             newSupplierDialog.add(newSupplierForm);
@@ -226,9 +226,7 @@ public class MainView extends VerticalLayout {
             newProductForm = new NewProductForm(newProductDialog,
                                                 productGrid,
                                                 this.service,
-                                                this.cacheService,
-                                                this.service.getAllProductsFromCache(),
-                                                this.service.getAllSuppliersFromCache());
+                                                this.cacheService);
             newProductForm.setWidth("25em");
             newProductDialog.add(newProductForm);
             newProductDialog.open();
@@ -243,6 +241,7 @@ public class MainView extends VerticalLayout {
         supplierGrid.addClassNames("supplier-grid");
 
         listSuppliers = service.getAllSuppliersFromCache();
+        listSuppliers.sort(Comparator.comparing(Supplier::getId));
         listSupplierDataProvider = DataProvider.ofCollection(listSuppliers);
 
         supplierGrid.addColumn(Supplier::getName)
@@ -279,7 +278,7 @@ public class MainView extends VerticalLayout {
 
             // Button for removing supplier and update to database and cache
             Button removeBtn = new Button("Delete", event -> {
-                deleteSupplier(supplier);
+                ConfirmationDialog confirmationDialog = new ConfirmationDialog(this, supplier, null, TITLE_CONFIRM_DIALOG, CONTENT_CONFIRM_DIALOG);
             });
             removeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
@@ -292,10 +291,24 @@ public class MainView extends VerticalLayout {
         supplierVerticalLayout.add(supplierGrid);
     }
 
+    public void createProductConfirmationDialog(Product product) {
+        ConfirmDialog dialog = new ConfirmDialog();
+        dialog.setHeader("Confirm Dialog");
+        dialog.setText("Do you want to delete this product?");
+
+        dialog.setConfirmText("Yes");
+        dialog.addConfirmListener(event -> deleteProduct(product));
+
+        dialog.setCancelable(true);
+        dialog.addCancelListener(event -> dialog.close());
+        dialog.open();
+    }
+
     private void initProductGrid() {
         productGrid.addClassNames("product-grid");
 
         listProducts = service.getAllProductsFromCache();
+        listProducts.sort(Comparator.comparing(Product::getId));
         listProductDataProvider = DataProvider.ofCollection(listProducts);
 
         productGrid.addColumn(Product::getProductName)
@@ -322,7 +335,7 @@ public class MainView extends VerticalLayout {
 
             // Button for removing person
             Button removeBtn = new Button("Delete", event -> {
-                deleteProduct(product);
+                ConfirmationDialog confirmationDialog = new ConfirmationDialog(this, null, product, TITLE_CONFIRM_DIALOG, CONTENT_CONFIRM_DIALOG);
             });
             removeBtn.addThemeVariants(ButtonVariant.LUMO_ERROR);
 
@@ -339,17 +352,13 @@ public class MainView extends VerticalLayout {
         supplierDetailForm = new SupplierDetailForm(supplierDetailDialog,
                                                     supplierGrid,
                                                     this.service,
-                                                    this.cacheService,
-                                                    this.service.getAllProductsFromCache(),
-                                                    this.service.getAllSuppliersFromCache());
+                                                    this.cacheService);
         supplierDetailForm.setWidth("25em");
 
         productDetailForm = new ProductDetailForm(productDetailDialog,
                                                   productGrid,
                                                   this.service,
-                                                  this.cacheService,
-                                                  this.service.getAllProductsFromCache(),
-                                                  this.service.getAllSuppliersFromCache());
+                                                  this.cacheService);
         productDetailForm.setWidth("25em");
     }
 
@@ -357,7 +366,7 @@ public class MainView extends VerticalLayout {
      * Delete Supplier in grid
      * @param supplier
      */
-    private void deleteSupplier(Supplier supplier) {
+    public void deleteSupplier(Supplier supplier) {
         String message = "";
         boolean isFound = service.deleteSupplierById(supplier.getId());
         if (isFound) {
@@ -384,13 +393,18 @@ public class MainView extends VerticalLayout {
             listSuppliers = service.getAllSuppliersFromCache();
             listSupplierDataProvider = DataProvider.ofCollection(listSuppliers);
 
-            listSupplierDataProvider.addFilter(supplier ->
+            listSupplierDataProvider.setFilter(supplier ->
                     supplier.getFirstname().toLowerCase().contains(supplierFilterText.getValue().toLowerCase()) ||
                     supplier.getLastname().toLowerCase().contains(supplierFilterText.getValue().toLowerCase()) ||
+                    (supplier.getFirstname() != null && supplier.getLastname() != null ?
+                            supplier.getFirstname().toLowerCase().concat(" ")
+                                    .concat(supplier.getLastname().toLowerCase())
+                                    .contains(supplierFilterText.getValue().toLowerCase()) :
+                            null
+                    ) ||
                     LocalDate.ofInstant(supplier.getDateOfBirth().toInstant(), ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                              .contains(supplierFilterText.getValue()) ||
-                    supplier.getEmail().contains(supplierFilterText.getValue()) ||
-                    supplier.getPhoneNumber().contains(supplierFilterText.getValue())
+                    supplier.getEmail().contains(supplierFilterText.getValue())
             );
             supplierGrid.setDataProvider(listSupplierDataProvider);
         } else {
@@ -416,6 +430,12 @@ public class MainView extends VerticalLayout {
             listProductDataProvider.setFilter(product ->
                     product.getFirstname().toLowerCase().contains(productFilterText.getValue().toLowerCase()) ||
                     product.getLastname().toLowerCase().contains(productFilterText.getValue().toLowerCase()) ||
+                    (product.getFirstname() != null && product.getLastname() != null ?
+                            product.getFirstname().toLowerCase().concat(" ")
+                                   .concat(product.getLastname().toLowerCase())
+                                   .contains(productFilterText.getValue().toLowerCase()) :
+                            null
+                    ) ||
                     (product.getSupplier().getFirstname() != null && product.getSupplier().getLastname() != null ?
                             product.getSupplier().getFirstname().toLowerCase().concat(" ")
                                    .concat(product.getSupplier().getLastname().toLowerCase())
@@ -442,7 +462,7 @@ public class MainView extends VerticalLayout {
      * Delete Product in grid
      * @param product
      */
-    private void deleteProduct(Product product) {
+    public void deleteProduct(Product product) {
         String message = "";
         boolean isFound = service.deleteProductById(product.getId());
 
