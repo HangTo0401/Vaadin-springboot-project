@@ -5,7 +5,7 @@
     <defaultCache eternal="true"
                   maxEntriesLocalHeap="1000000"
                   overflowToDisk="false">
-        <!-- Swaps cache entries (on-heap and/or off-heap) to disk when the cache is full
+        <!-- Enables temporary local disk usage. Swaps cache entries (on-heap and/or off-heap) to disk when the cache is full
         localTempSwap persistence strategy allows the cache to use the local disk during cache operation.
         The disk storage is temporary and is cleared after a restart.-->
         <persistence strategy="localTempSwap"/>
