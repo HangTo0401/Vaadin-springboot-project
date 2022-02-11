@@ -71,7 +71,7 @@ public class CacheService {
         log.info("Get all suppliers from cache");
         try {
             // Create a new query builder for this cache
-            Query supplierCacheQuery = this.supplierCache.createQuery();
+            Query supplierCacheQuery = supplierCache.createQuery();
 
             // Return all element values from cache
             supplierCacheQuery.includeValues();
