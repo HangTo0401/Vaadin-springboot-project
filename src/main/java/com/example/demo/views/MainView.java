@@ -12,7 +12,6 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -297,19 +296,6 @@ public class MainView extends VerticalLayout {
         supplierGrid.setItems(listSuppliers);
         supplierGrid.setDataProvider(listSupplierDataProvider);
         supplierVerticalLayout.add(supplierGrid);
-    }
-
-    public void createProductConfirmationDialog(Product product) {
-        ConfirmDialog dialog = new ConfirmDialog();
-        dialog.setHeader("Confirm Dialog");
-        dialog.setText("Do you want to delete this product?");
-
-        dialog.setConfirmText("Yes");
-        dialog.addConfirmListener(event -> deleteProduct(product));
-
-        dialog.setCancelable(true);
-        dialog.addCancelListener(event -> dialog.close());
-        dialog.open();
     }
 
     private void initProductGrid() {
